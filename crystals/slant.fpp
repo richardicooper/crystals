@@ -772,10 +772,9 @@ C Transpose the matrix...
         DO 1348 IINX = 1,3
                 TRANS(IINX+9) = PROCS(IINX+13)
 1348    CONTINUE
-&GID      if (isstml .eq.4) then
-&GID      CALL FOUR3DI(TRANS,STORE(L1P1),NUM(1),START(1),
-&GID     1 STEPS(1),.TRUE.)
-&GID      endif
+      if (isstml .eq.4) then
+      CALL FOUR3DI(TRANS,STORE(L1P1),NUM(1),START(1),STEPS(1),.TRUE.)
+      endif
 cjan99
       ENDIF
 C
@@ -885,8 +884,7 @@ C
 C--MAIN LOOP FOR ADDING IN THE GENERATED REFLECTIONS
       DO 2550 I=JA,JB,NW
       GOTO(2100,2150,2200,2250,2300,2050),IN
-C2050  STOP 275
-2050  CALL GUEXIT(275)
+2050  STOP 275
 C--'FO' FOURIER
 2100  CONTINUE
       F=STORE(I+3)
@@ -958,8 +956,7 @@ C
 C--END OF THE MAP  -  CALCULATE THE SCALE FACTORS
 2600  CONTINUE
       GOTO(2700,2700,2700,2750,2750,2650),IN
-C2650  STOP 344
-2650  CALL GUEXIT(344)
+2650  STOP 344
 2700  CONTINUE
       W=U*2./STORE(L1P1+6)
       GOTO 2800
@@ -971,9 +968,9 @@ C--MAIN MAP PRINTING ROUTINES
       IF (IOUTAP .GT. 0) THEN
         WRITE(MT1) NXNY, (STORE(I)*W, I= L8, L8+NXNY-1)
 cjan99
-&GID          if (isstml .eq.4 ) then
-&GID          CALL FOUR3D(NXNY,STORE(L8),W)
-&GID          endif
+          if (isstml .eq.4 ) then
+          CALL FOUR3D(NXNY,STORE(L8),W)
+          endif
 cjan99
       ENDIF
       JA=MINY

@@ -99,23 +99,7 @@ C----- FORM THE UN-NORMALISED VECTOR PRODUCT
  
 CODE FOR SGERRS
       SUBROUTINE YGERRS(SGP,IER,LPT)
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
+      INCLUDE 'COMMON.INC'
       DIMENSION SGP(10)
 C
       CHARACTER*52 CMESSG(24)
@@ -183,25 +167,7 @@ C-----------------------------------------------------------------------
 C  SPACE GROUP LATTICE AND OPERATOR INTERPRETATION
 C-----------------------------------------------------------------------
 C
-
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
-
+      INCLUDE 'COMMON.INC'
       DIMENSION D(3,3),L(4,4)
 C-----------------------------------------------------------------------
 C  NOW LET US DETERMINE THE LAUE GROUP AND UNIQUE AXIS IF MONOCLINIC
@@ -864,25 +830,7 @@ C
 C
 CODE FOR SGLPAK
       SUBROUTINE YGLPAK(L,IER)
-      
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
-
+      INCLUDE 'COMMON.INC'
       DIMENSION L(4)
       IF ( L(2) .LT. 12 ) IER = 4
       IF ( L(2) .GT. 17 ) IER = 4
@@ -895,25 +843,7 @@ C
 C
 CODE FOR SGMTML
       SUBROUTINE YGMTML(X,I,Y,J,Z,K)
-      
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
-
+      INCLUDE 'COMMON.INC'
       DIMENSION X(5,4,25),Y(5,4,25),Z(5,4,25)
         DO 100 L = 1,4
           DO 100 M = 1,4
@@ -941,25 +871,7 @@ CODE FOR SGPRNT
 C-----------------------------------------------------------------------
 C  SPACE GROUP ROUTINE PRINTING
 C-----------------------------------------------------------------------
-      
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
-
+      INCLUDE 'COMMON.INC'
       DIMENSION SPG(10),JRT(3,4,25),CEN(3,4),NCVT(7),CENV(3,6),NSYS(14)
       CHARACTER*3 XYZ(12),TRA(11),OUTL(3,2,3),POLAR(8)
       CHARACTER*4 LTYP(3,7),SYST(3,8),LAUE(2,14)
@@ -1111,25 +1023,7 @@ C
 C
 CODE FOR SGRMAT
       SUBROUTINE YGRMAT(RT,A,B,C,D,E,F,G,H,O)
-      
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
-
+      INCLUDE 'COMMON.INC'
       INTEGER A,B,C,D,E,F,G,H,O
       DIMENSION RT(5,4)
       RT(1,1) = A
@@ -1227,29 +1121,11 @@ C
 C
 C
 C
-      
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
-
+      INCLUDE 'COMMON.INC'
       DIMENSION RMI(3), RMA(3), ABC(3)
       DIMENSION SPG(10),JRT(3,4,25),CEN(3,4)
       DIMENSION RT(5,4,25),D(3,3),L(4,4),LCEN(7)
-      CHARACTER *1 SCHR(25), CHAR
+      CHARACTER *1 CHR(25), CHAR
       CHARACTER *10 CSPG
 C
  
@@ -1260,7 +1136,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C                1   2   3   4   5   6   7   8   9  10  11  12  13  14
 C-----------------------------------------------------------------------
-      DATA SCHR/' ','C','B','A','P','F','I','R','M','N','D','1','2','3',
+      DATA CHR/' ','C','B','A','P','F','I','R','M','N','D','1','2','3',
      $         '4','5','6','-','/','H','.','0','0','0','0'/
 C-----------------------------------------------------------------------
 C               15  16  17  18  19  20  21
@@ -1308,7 +1184,7 @@ C    AS NUMERICAL VALUES FOR MANIPULATION
 C-----------------------------------------------------------------------
         DO 140 J = 1,10
           DO 110 I = 1,21
-          IF (CSPG(J:J) .EQ. SCHR(I)) GO TO 120
+          IF (CSPG(J:J) .EQ. CHR(I)) GO TO 120
   110     CONTINUE
         GO TO 140
   120   IF (K + M + I .EQ. 1) GO TO 140
@@ -1777,25 +1653,7 @@ C
 C
 CODE FOR SGTRCF
       SUBROUTINE YGTRCF(M,RT,N,M2,LCENT,LAUENO,IER,LPT)
-      
-\CAMPAR
-\CAMCOM
-\CAMANA
-\CAMDAT
-\CAMCAL
-\CAMMSE
-\CAMMEN
-\CAMCHR
-\CAMGRP
-\CAMCOL
-\CAMFLG
-\CAMSHR
-\CAMVER
-\CAMKEY
-\CAMBTN
-\CAMBLK
-\XIOBUF
-
+      INCLUDE 'COMMON.INC'
       DIMENSION RT(5,4,25)
       DIMENSION ICENV(3,5),NCVT(7),JCVT(7)
 C

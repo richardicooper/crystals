@@ -1,8 +1,3 @@
-C $Log: not supported by cvs2svn $
-C Revision 1.6  1999/02/16 11:14:05  dosuser
-C RIC: Commented out 'END' checking for GID version when running Cameron
-C
-
 CODE FOR XLNKFP
       SUBROUTINE XLNKFP
 C
@@ -76,7 +71,7 @@ C----- FOR SHELXS86
       CHARACTER *32 DECML
 C
 C----- FOR SIR**
-      CHARACTER *80 CSOURC, CSPACE, CL29, CRESLT, CHARTC
+      CHARACTER *80 CSOURC, CSPACE, CL29, CRESLT
 C
       REAL MAT(3)
 C
@@ -245,7 +240,6 @@ C--WRITE THE PARAMETER FILE TYPE
 &VAX      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
 &DOS      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
 &DVF      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-&GID      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
 &H-P      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
 &CYB      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
       WRITE ( NCFPU1 ,' ( ''$SYMM'' )' )
@@ -549,51 +543,52 @@ C
 C----- CAMERON - 2 FILES TO CLOSE AND START PROGRAM
       I = KFLCLS(NCFPU1)
       I = KFLCLS(NCFPU2)
-C - Only GID and DOS support Cameron's graphics.
-##GIDDOS        GOTO 9000 !Skip this Cameron part.
 C -- START CAMERON - ONLY TWO ELEMENT OF STORE (CURRENTLY A DUMMY) USED
-C      IF (ISSTML .EQ. 4) THEN
+      IF (ISSTML .EQ. 4) THEN
         LCLOSE = .FALSE.
-C - Only GID needs funny text strings to initialise the graphics.
-C - Could move these to ZCAMER.
-&GID        WRITE(CHARTC,'(A)') '^^CH CHART _CAMERONCHART'
-&GID        CALL ZMORE(CHARTC,0)
-&GID        WRITE(CHARTC,'(A)') '^^CH ATTACH _CAMERONVIEW'
-&GID        CALL ZMORE(CHARTC,0)
-&GID        WRITE(CHARTC,'(A)') '^^CR'
-&GID        CALL ZMORE(CHARTC,0)
-&&GIDDOS        CALL ZCAMER ( 1, 0 , 0 , 0)
+        WRITE(CHARTC,'(A)') '^^CH CHART _CAMERONCHART'
+        CALL ZMORE(CHARTC,0)
+        WRITE(CHARTC,'(A)') '^^CH ATTACH _CAMERONVIEW'
+        CALL ZMORE(CHARTC,0)
+        WRITE(CHARTC,'(A)') '^^CR'
+        CALL ZMORE(CHARTC,0)
+        CALL ZCAMER ( 1, 0 , 0 , 0)
 C       OLNCRU = NCRU
 C       NCRU = 5
 8025  CONTINUE
-        IF (LCLOSE) THEN
+         IF (LCLOSE) THEN
+            LCLOSE = .FALSE.
+C Dispose of the current picture.
+C            WRITE(NCAWU,'(A)')'^^CH NEWCHART ^^EN'
+C            WRITE(NCAWU,'(A)')'^^CH UPDATE ^^EN'
+C            NCRU = OLNCRU
             GOTO 9000 !Cameron has shutdown
-        ENDIF
-        IIIIIN = 1
-        ISTAT = KRDREC(IIIIIN)
+         ENDIF
+                IIIIIN = 1
+                ISTAT = KRDREC(IIIIIN)
+C         ISTAT = KRDLIN(NCRU,CHR,ILENRD)
 C Replace 0 with 32 along the string
-C        DO 8029 I = 1,80
-C           IF(LCMAGE(I) .EQ. 0) LCMAGE(I)=32
-C8029    CONTINUE
-        WRITE(CHRBUF,'(80A1)')LCMAGE
-C&&GIDDOS           CALL ZMORE(CHRBUF,0)
-&&GIDDOS         CALL ZCONTR
-Ccdjwjan99
-C         if ((chrbuf(1:3) .eq. 'end') .or. (chrbuf(1:3) .eq. 'END'))
-C     1   lclose = .true.
-Ccdjwjan99
+         DO 8029 I = 1,80
+             IF(LCMAGE(I) .EQ. 0) LCMAGE(I)=32
+8029     CONTINUE
+         WRITE(CHRBUF,'(80A1)')LCMAGE
+           CALL ZMORE(CHRBUF,0)
+         CALL ZCONTR
+cdjwjan99
+         if ((chrbuf(1:3) .eq. 'end') .or. (chrbuf(1:3) .eq. 'END'))
+     1   lclose = .true.
+cdjwjan99
       GOTO 8025
 C
-C      ELSE IF (ISSTML .EQ. 3) THEN
-C       CALL ZCAMER ( 1, 0 , 0 , 0)
-CC       CALL VGACOL ('BOL', 'WHI', 'BLU')
-C       CALL OUTCOL(1)
-CC----- FLUSH THE SCREEN BUFFER AFTER GRAPHICS MODE - OBSOLETE IN WIN32
-CCDOS      CALL TEXT_MODE@
-CCDOS      WRITE(NCAWU,'(78X,A,///)') (' ',I=1,18)
-C      ELSE
-C       CALL ZCAMER ( 1, 0 , 0 , 0)
-C      ENDIF
+      ELSE IF (ISSTML .EQ. 3) THEN
+       CALL ZCAMER ( 1, 0 , 0 , 0)
+       CALL VGACOL ('BOL', 'WHI', 'BLU')
+C----- FLUSH THE SCREEN BUFFER AFTER GRAPHICS MODE - OBSOLETE IN WIN32
+CDOS      CALL TEXT_MODE@
+CDOS      WRITE(NCAWU,'(78X,A,///)') (' ',I=1,18)
+      ELSE
+       CALL ZCAMER ( 1, 0 , 0 , 0)
+      ENDIF
       GOTO 9000
 C
 8030  CONTINUE

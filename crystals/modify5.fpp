@@ -229,10 +229,10 @@ CDJWFEB97>
 C----- NOTE - MOVE INTO XMDMON IF YOU WISH TO TRAP INDIVIDUAL ATOM
 C      CHANGES
 CRICAUG98> This bit crashes if you delete two atoms in a row.
-##DVFGID      IF (LA .EQ. 5) THEN
-##DVFGID            ILOOP = ILOOP +1
-##DVFGID            CALL XGDBUP('WRITE', L5, N5, MD5, ILOOP)
-##DVFGID      ENDIF
+#DVF      IF (LA .EQ. 5) THEN
+#DVF            ILOOP = ILOOP +1
+#DVF            CALL XGDBUP('WRITE', L5, N5, MD5, ILOOP)
+#DVF      ENDIF
 CRICAUG98<
 CDJWFEB97<
 C -- BRANCH ON REQUIRED FUNCTION
@@ -1966,8 +1966,7 @@ C      SUM[(X-A)*(Y-B)]= SUM(X*Y) - 1/N * SUM(X)*SUM(Y)
             A(I) = A(I) * DIV / D(I)
 40      CONTINUE
       ELSE
-C            STOP 'ERROR'
-            CALL GUEXIT(2017)
+            STOP 'ERROR'
       ENDIF
       RETURN
       END

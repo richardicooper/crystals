@@ -295,7 +295,7 @@ C----- LOOK FOR BLANK AFTER 'ALL'
           IF (KCOMP (5, IMAGE(J), KMOUSE(1), 1, 5) .GT. 0) THEN
               CALL XFILL (IB, IMAGE(J), 80-J+1)
               CALL XMOVEI ( IMAGE, LCMAGE, 80)
-##DVFGID             CALL XRDMSE (CMOUSE, NMOUSE)
+              CALL XRDMSE (CMOUSE, NMOUSE)
               IMOUSE = 1
           ENDIF
         ENDIF
@@ -621,8 +621,7 @@ C
 C
 9910  CONTINUE
       CALL XOPMSG ( IOPCRY , IOPINT , 0 )
-C      STOP
-      CALL GUEXIT(2011)
+      STOP
       END
 C
 C
@@ -1253,9 +1252,6 @@ C    GIVEN
 C
 C--SEARCH FOR THE ATOMIC PARAMETER
 1200  CONTINUE
-cdjwjan99
-c----- zero the true parameter index from coord
-      lorig = 0
 C----- CHECK FOR SHORT FORM
       N=3
       J=KCOMP(NWXS,STORE(MF+2),MXS,NXS,LXS)
@@ -1280,15 +1276,16 @@ C----- POSITIONS
       I=5
       GOTO 1610
 1610  continue
-      lorig = i
-      goto 1430
+      lorig = 1
+      goto 1450
 C--CHECK IF THIS IS A NORMAL PARAMETER
 1400  CONTINUE
       N=1
+c----- zero the true parameter index from coord
+      lorig = 0
       I=KCOMP(NWKA,STORE(MF+2),ICOORD,NKA,LKA)
 c----- save the true parameter index from coord
       lorig = i
-1430  continue
       if (i .ge. 15) i = i - 7
       IF(I)1000,1000,1450
 C--SET UP A DUMMY ATOM HEADER

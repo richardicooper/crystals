@@ -242,8 +242,7 @@ C
 C----- CHANGE COLOUR UNDER DOS
         IF (ICPSTS .EQ. 0 ) THEN
 C----- CHANGE COLOUR TO BLUE  ON WHITE FOR COPIED TEXT
-C          CALL VGACOL ( 'OFF', 'BLU', 'WHI')
-          CALL OUTCOL(1)
+          CALL VGACOL ( 'OFF', 'BLU', 'WHI')
 C-----    SWITCH ON LINE FEEDS
           ICPSTS = 1
         ENDIF
@@ -255,8 +254,7 @@ C-----    SWITCH ON LINE FEEDS
       ELSE
          IF (ICPSTS .EQ. 1 ) THEN
 C----- RESTORE COLOUR TO WHITE ON BLUE
-C          CALL VGACOL ( 'BOL', 'WHI', 'BLU')
-          CALL OUTCOL(1)
+          CALL VGACOL ( 'BOL', 'WHI', 'BLU')
 C-----    COPY STATUS 'OFF'
           ICPSTS = 0
          ENDIF
@@ -331,8 +329,7 @@ C
         CALL XFLUNW ( 2 , 1 )
          IF (ICPSTS .EQ. 1 ) THEN
 C----- RESTORE COLOUR TO WHITE ON BLUE
-C          CALL VGACOL ( 'BOL', 'WHI', 'BLU')
-          CALL OUTCOL(1)
+          CALL VGACOL ( 'BOL', 'WHI', 'BLU')
 C-----    COPY STATUS 'OFF'
           ICPSTS = 0
          ENDIF
@@ -419,19 +416,20 @@ C
 &PPC      ELSE
 &PPCCE***
 C&PPCCE***
-
-      IF (IUNIT .EQ. NCUFU(1)) THEN
+&DVFCGUI{
+      IF ((IUNIT .EQ. NCUFU(1)) .AND. (ISSTML .EQ. 4)) THEN
 C If in script mode, set flag.
-&GID            INSTRC = .FALSE.
-&GID            IF ( IRDSCR(IFLIND) .GT. 0 ) INSTRC = .TRUE.
-&GIDC Update status information for UI.
-&GID            CALL MENUUP
-&GID1515      FORMAT ('^^CO SET PROGOUTPUT TEXT = ',A)
-&GID            WRITE (CMON,1515) 'Ready'
-&GID            CALL XPRVDU (NCVDU,1,0)
+            INSTRC = .FALSE.
+            IF ( IRDSCR(IFLIND) .GT. 0 ) INSTRC = .TRUE.
+C Update status information for UI.
+            CALL MENUUP
+1515      FORMAT ('^^CO SET PROGOUTPUT TEXT = ',A)
+            WRITE (CMON,1515) 'Ready'
+            CALL XPRVDU (NCVDU,1,0)
             CALL GETCOM(CLINE)
-&GID            WRITE (CMON,1515) 'Working...'
-&GID            CALL XPRVDU (NCVDU,1,0)
+            WRITE (CMON,1515) 'Working...'
+            CALL XPRVDU (NCVDU,1,0)
+&DVFCGUI}
       ELSE
       READ ( IUNIT, 1015, ERR = 9910, END = 9920 , IOSTAT = IOS ) CLINE
       ENDIF
@@ -1392,8 +1390,7 @@ C
       ELSE IF ( IRQFNC .EQ. 10 ) THEN
         IF (ISSTML .EQ. 3 ) THEN
 C             IF TERMINAL CURRENTLY VGA, SWITCH TO BLACK AND WHITE
-C              CALL VGACOL ( 'OFF', 'WHI', 'BLA' )
-              CALL OUTCOL(5)
+              CALL VGACOL ( 'OFF', 'WHI', 'BLA' )
               WRITE ( CMON,'(80X)')
               CALL XPRVDU(NCVDU, 1,0)
         END IF
@@ -1405,12 +1402,10 @@ C-----  INITIALISE MENU AREAS AND SET TERMINAL TYPE ON VAX/NOVAX SYSTEMS
               LUPDAT = .FALSE.
         ELSE IF (ISSTML .EQ. 3 ) THEN
 C             VGA COLOURS
-C              CALL VGACOL ( 'BOL', 'WHI', 'BLU' )
-              CALL OUTCOL(1)
+              CALL VGACOL ( 'BOL', 'WHI', 'BLU' )
               LUPDAT = .FALSE.
         ELSE IF (ISSTML .EQ. 4) THEN
 C         WINDOWED OUTPUT
-              CALL OUTCOL(1)
               CALL XWININ (IWNFLG)
               IF (IWNFLG .EQ. 0) THEN
                   LUPDAT = .FALSE.
