@@ -614,9 +614,6 @@ void MergedData::add(const Matrix<short>& pHKL, const Reflection& pRefl)
     gSortedReflections->insert(&(gReflections[iUpto++]));
 }
 
-/*
- *  
- */
 void MergedData::releaseReflections()
 {
     if (gReflections != NULL)
@@ -649,7 +646,6 @@ float MergedData::calculateRFactor()
 	    {
 		if (tValues.size()>1) //As long as there are more then one reflection
 		{
-                   // cout << tCurHKL->getValue(0) << " " << tCurHKL->getValue(1) << " " << tCurHKL->getValue(2) << "\n";
                     tNumMerged += tValues.size();
                     
 		    tSum = fabsf(sum(tValues.getPointer(), tValues.size()));
@@ -664,9 +660,7 @@ float MergedData::calculateRFactor()
             tValues.add((*tIter)->i);  //Save the intensity
             tIter++; //Move on to the next reflection in the list.
         }
-      //  cout << "\n\tNumber of reflections merged: " << (tNumMerged) << "\n";
-        //cout << "\tNumber of merged reflections: " << (tNumResRef) << "\n";
-        //cout << "\tSum of Sum: " << tSumSum << "\n";
+
         if (tSumSum == 0)
             iRFactor = 0;
         else
