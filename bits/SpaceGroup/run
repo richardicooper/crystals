@@ -1,1 +1,0 @@
-./build/SpaceGroup -f $1 -t Data/Tables.txt
