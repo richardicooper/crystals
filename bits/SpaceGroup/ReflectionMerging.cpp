@@ -66,85 +66,45 @@ LaueClassMatrices::LaueClassMatrices():iMatrices(NULL)
 {
     MatrixReader* tMatrices[39];
  
-/*    tMatrices[0] = new MatrixReader("[-1 0 0; -1 1 0; 0 0 1]");
-    tMatrices[1] = new MatrixReader("[-1 0 0; 0 -1 0; 0 0 1]");
-    tMatrices[2] = new MatrixReader("[-1 0 0; 0 0 1; 0 -1 0]");
-    tMatrices[3] = new MatrixReader("[-1 0 0; 0 1 0; 0 0 -1]");
-    tMatrices[4] = new MatrixReader("[-1 0 0; 0 1 0; 0 0 1]");    
-    tMatrices[5] = new MatrixReader("[-1 1 0; -1 0 0; 0 0 1]");
-    tMatrices[6] = new MatrixReader("[-1 1 0; -1 1 0; 0 0 1]");
-    tMatrices[7] = new MatrixReader("[-1 1 0; 0 1 0; 0 0 1]");
-    tMatrices[8] = new MatrixReader("[0 -1 0; -1 0 0; 0 0 1]");
-    tMatrices[9] = new MatrixReader("[0 -1 0; 0 0 1; -1 0 0]");
-    tMatrices[10] = new MatrixReader("[0 -1 0; 1 -1 0; 0 0 1]");
-    tMatrices[11] = new MatrixReader("[0 -1 0; 1 0 0; 0 0 -1]");
-    tMatrices[12] = new MatrixReader("[0 -1 0; 1 0 0; 0 0 1]");
-    tMatrices[13] = new MatrixReader("[0 0 -1; 0 1 0; -1 0 0]");
-    tMatrices[14] = new MatrixReader("[0 0 -1; 1 0 0; 0 -1 0]");
-    tMatrices[15] = new MatrixReader("[0 0 1; -1 0 0; 0 -1 0]");
-    tMatrices[16] = new MatrixReader("[0 0 1; 0 -1 0; -1 0 0]");
-    tMatrices[17] = new MatrixReader("[0 0 1; 0 1 0; -1 0 0]");
-    tMatrices[18] = new MatrixReader("[0 0 1; 0 1 0; 1 0 0]");
-    tMatrices[19] = new MatrixReader("[0 0 1; 1 0 0; 0 -1 0]");
-    tMatrices[20] = new MatrixReader("[0 0 1; 1 0 0; 0 1 0]");
-    tMatrices[21] = new MatrixReader("[0 1 0; -1 0 0; 0 0 -1]");
-    tMatrices[22] = new MatrixReader("[0 1 0; -1 0 0; 0 0 1]");
-    tMatrices[23] = new MatrixReader("[0 1 0; -1 1 0; 0 0 1]");
-    tMatrices[24] = new MatrixReader("[0 1 0; 0 0 -1; -1 0 0]");
-    tMatrices[25] = new MatrixReader("[0 1 0; 0 0 1; -1 0 0]");
-    tMatrices[26] = new MatrixReader("[0 1 0; 0 0 1; 1 0 0]");
-    tMatrices[27] = new MatrixReader("[0 1 0; 1 0 0; 0 0 -1]");
-    tMatrices[28] = new MatrixReader("[0 1 0; 1 0 0; 0 0 1]");
-    tMatrices[29] = new MatrixReader("[1 -1 0; 0 -1 0; 0 0 1]");
-    tMatrices[30] = new MatrixReader("[1 -1 0; 1 0 0; 0 0 1]");
-    tMatrices[31] = new MatrixReader("[1 0 0; 0 -1 0; 0 0 -1]");
-    tMatrices[32] = new MatrixReader("[1 0 0; 0 -1 0; 0 0 1]");
-    tMatrices[33] = new MatrixReader("[1 0 0; 0 0 -1; 0 -1 0]");
-    tMatrices[34] = new MatrixReader("[1 0 0; 0 0 1; 0 -1 0]");
-    tMatrices[35] = new MatrixReader("[1 0 0; 0 0 1; 0 1 0]");
-    tMatrices[36] = new MatrixReader("[1 0 0; 0 1 0; 0 0 -1]");
-    tMatrices[37] = new MatrixReader("[1 0 0; 0 1 0; 0 0 1]");
-    tMatrices[38] = new MatrixReader("[1 0 0; 1 -1 0; 0 0 1]");*/
-tMatrices[0] = new MatrixReader("[-1 -1 0; 0 1 0; 0 0 1]");
-tMatrices[1] = new MatrixReader("[-1 0 0; 0 -1 0; 0 0 1]");
-tMatrices[2] = new MatrixReader("[-1 0 0; 0 0 1; 0 -1 0]");
-tMatrices[3] = new MatrixReader("[-1 0 0; 0 1 0; 0 0 -1]");
-tMatrices[4] = new MatrixReader("[-1 0 0; 0 1 0; 0 0 1]");
-tMatrices[5] = new MatrixReader("[0 1 0; -1 -1 0; 0 0 1]");
-tMatrices[6] = new MatrixReader("[-1 1 0; 1 0 0; 0 0 1]");
-tMatrices[7] = new MatrixReader("[-1 0 0; 1 1 0; 0 0 1]");
-tMatrices[8] = new MatrixReader("[0 -1 0; -1 0 0; 0 0 1]");
-tMatrices[9] = new MatrixReader("[0 -1 0; 0 0 1; -1 0 0]");
-tMatrices[10] = new MatrixReader("[-1 -1 0; 1 0 0; 0 0 1]");
-tMatrices[11] = new MatrixReader("[0 -1 0; 1 0 0; 0 0 -1]");
-tMatrices[12] = new MatrixReader("[0 -1 0; 1 0 0; 0 0 1]");
-tMatrices[13] = new MatrixReader("[0 0 -1; 0 1 0; -1 0 0]");
-tMatrices[14] = new MatrixReader("[0 0 -1; 1 0 0; 0 -1 0]");
-tMatrices[15] = new MatrixReader("[0 0 1; -1 0 0; 0 -1 0]");
-tMatrices[16] = new MatrixReader("[0 0 1; 0 -1 0; -1 0 0]");
-tMatrices[17] = new MatrixReader("[0 0 1; 0 1 0; -1 0 0]");
-tMatrices[18] = new MatrixReader("[0 0 1; 0 1 0; 1 0 0]");
-tMatrices[19] = new MatrixReader("[0 0 1; 1 0 0; 0 -1 0]");
-tMatrices[20] = new MatrixReader("[0 0 1; 1 0 0; 0 1 0]");
-tMatrices[21] = new MatrixReader("[0 1 0; -1 0 0; 0 0 -1]");
-tMatrices[22] = new MatrixReader("[0 1 0; -1 0 0; 0 0 1]");
-tMatrices[23] = new MatrixReader("[1 1 0; -1 0 0; 0 0 1]");
-tMatrices[24] = new MatrixReader("[0 1 0; 0 0 -1; -1 0 0]");
-tMatrices[25] = new MatrixReader("[0 1 0; 0 0 1; -1 0 0]");
-tMatrices[26] = new MatrixReader("[0 1 0; 0 0 1; 1 0 0]");
-tMatrices[27] = new MatrixReader("[0 1 0; 1 0 0; 0 0 -1]");
-tMatrices[28] = new MatrixReader("[0 1 0; 1 0 0; 0 0 1]");
-tMatrices[29] = new MatrixReader("[1 0 0; -1 -1 0; 0 0 1]");
-tMatrices[30] = new MatrixReader("[0 -1 0; 1 1 0; 0 0 1]");
-tMatrices[31] = new MatrixReader("[1 0 0; 0 -1 0; 0 0 -1]");
-tMatrices[32] = new MatrixReader("[1 0 0; 0 -1 0; 0 0 1]");
-tMatrices[33] = new MatrixReader("[1 0 0; 0 0 -1; 0 -1 0]");
-tMatrices[34] = new MatrixReader("[1 0 0; 0 0 1; 0 -1 0]");
-tMatrices[35] = new MatrixReader("[1 0 0; 0 0 1; 0 1 0]");
-tMatrices[36] = new MatrixReader("[1 0 0; 0 1 0; 0 0 -1]");
-tMatrices[37] = new MatrixReader("[1 0 0; 0 1 0; 0 0 1]");
-tMatrices[38] = new MatrixReader("[1 1 0; 0 -1 0; 0 0 1]");
-
+	tMatrices[0] = new MatrixReader("[-1 -1 0; 0 1 0; 0 0 1]");
+	tMatrices[1] = new MatrixReader("[-1 0 0; 0 -1 0; 0 0 1]");
+	tMatrices[2] = new MatrixReader("[-1 0 0; 0 0 1; 0 -1 0]");
+	tMatrices[3] = new MatrixReader("[-1 0 0; 0 1 0; 0 0 -1]");
+	tMatrices[4] = new MatrixReader("[-1 0 0; 0 1 0; 0 0 1]");
+	tMatrices[5] = new MatrixReader("[0 1 0; -1 -1 0; 0 0 1]");
+	tMatrices[6] = new MatrixReader("[-1 1 0; 1 0 0; 0 0 1]");
+	tMatrices[7] = new MatrixReader("[-1 0 0; 1 1 0; 0 0 1]");
+	tMatrices[8] = new MatrixReader("[0 -1 0; -1 0 0; 0 0 1]");
+	tMatrices[9] = new MatrixReader("[0 -1 0; 0 0 1; -1 0 0]");
+	tMatrices[10] = new MatrixReader("[-1 -1 0; 1 0 0; 0 0 1]");
+	tMatrices[11] = new MatrixReader("[0 -1 0; 1 0 0; 0 0 -1]");
+	tMatrices[12] = new MatrixReader("[0 -1 0; 1 0 0; 0 0 1]");
+	tMatrices[13] = new MatrixReader("[0 0 -1; 0 1 0; -1 0 0]");
+	tMatrices[14] = new MatrixReader("[0 0 -1; 1 0 0; 0 -1 0]");
+	tMatrices[15] = new MatrixReader("[0 0 1; -1 0 0; 0 -1 0]");
+	tMatrices[16] = new MatrixReader("[0 0 1; 0 -1 0; -1 0 0]");
+	tMatrices[17] = new MatrixReader("[0 0 1; 0 1 0; -1 0 0]");
+	tMatrices[18] = new MatrixReader("[0 0 1; 0 1 0; 1 0 0]");
+	tMatrices[19] = new MatrixReader("[0 0 1; 1 0 0; 0 -1 0]");
+	tMatrices[20] = new MatrixReader("[0 0 1; 1 0 0; 0 1 0]");
+	tMatrices[21] = new MatrixReader("[0 1 0; -1 0 0; 0 0 -1]");
+	tMatrices[22] = new MatrixReader("[0 1 0; -1 0 0; 0 0 1]");
+	tMatrices[23] = new MatrixReader("[1 1 0; -1 0 0; 0 0 1]");
+	tMatrices[24] = new MatrixReader("[0 1 0; 0 0 -1; -1 0 0]");
+	tMatrices[25] = new MatrixReader("[0 1 0; 0 0 1; -1 0 0]");
+	tMatrices[26] = new MatrixReader("[0 1 0; 0 0 1; 1 0 0]");
+	tMatrices[27] = new MatrixReader("[0 1 0; 1 0 0; 0 0 -1]");
+	tMatrices[28] = new MatrixReader("[0 1 0; 1 0 0; 0 0 1]");
+	tMatrices[29] = new MatrixReader("[1 0 0; -1 -1 0; 0 0 1]");
+	tMatrices[30] = new MatrixReader("[0 -1 0; 1 1 0; 0 0 1]");
+	tMatrices[31] = new MatrixReader("[1 0 0; 0 -1 0; 0 0 -1]");
+	tMatrices[32] = new MatrixReader("[1 0 0; 0 -1 0; 0 0 1]");
+	tMatrices[33] = new MatrixReader("[1 0 0; 0 0 -1; 0 -1 0]");
+	tMatrices[34] = new MatrixReader("[1 0 0; 0 0 1; 0 -1 0]");
+	tMatrices[35] = new MatrixReader("[1 0 0; 0 0 1; 0 1 0]");
+	tMatrices[36] = new MatrixReader("[1 0 0; 0 1 0; 0 0 -1]");
+	tMatrices[37] = new MatrixReader("[1 0 0; 0 1 0; 0 0 1]");
+	tMatrices[38] = new MatrixReader("[1 1 0; 0 -1 0; 0 0 1]");
 
     iMatrices = new Array<MatrixReader*>(tMatrices, 39);
 }
@@ -279,22 +239,12 @@ public:
                 }
             }
             tCurHKL = (*pHKLs.get(j)->tHKL);   //Set current max hkl value
-           // Matrix<short> tOutputMatrix(3, 1);
             for (size_t i = 0; i < iMatIndices->size(); i++) //Run through all the matrices.
             {
-            //    tCurHKL = (*pHKLs.get(j)->tHKL);
                 (gLaueMatrices.getMatrix((*iMatIndices)[i]))->mul(*pHKLs.get(j)->tHKL, tTempHKL); //Multiply the hkl value with the current matrix
                 
-              //  Matrix<short> tMatrix(*(gLaueMatrices.getMatrix((*iMatIndices)[i])));
-                //tMatrix.transpose();
-                //tMatrix.mul(*pHKLs.get(j)->tHKL, tTempHKL); //Multiply the hkl value with the current matrix
-               // cout << (*iMatIndices)[i] <<  "\n" << (*gLaueMatrices.getMatrix((*iMatIndices)[i])) << "\n";
-                for (int j = 0; j < 2; j++) //Do this twice
+				for (int j = 0; j < 2; j++) //Do this twice
                 {
-   
-                  //  tOutputMatrix = tTempHKL;
-                 //   tOutputMatrix.transpose();
-                  //  cout << "\t" << tOutputMatrix << "\n";
                     if (greaterHKL(tTempHKL, tCurHKL)) //see if this new HKL value is greater then the last. This is just for consistancy could just as well be least hkl value or something.
                     {
                         tCurHKL = tTempHKL;
