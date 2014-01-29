@@ -1131,6 +1131,7 @@ C--ASSIGN VARIOUS POINTERS
       M3TR=L3TR
       M3TI=L3TI
       allocate(formfactors(2, n3*max(MD3TR, md3ti)))
+      formfactors=0.0
 C--LOOP OVER ACH FORM FACTOR TYPE IN TURN
       DO JZ=1,N3 ! 1050
           JU=M3+3
@@ -1142,6 +1143,170 @@ C--COMPUTE THE REAL PART
           formfactors(1, (jz-1)*MD3TR+1) = RPART+STORE(M3+1)
 C--COMPUTE THE IMAGINARY PART
           formfactors(2, (jz-1)*MD3TI+1)=STORE(M3+2)
+C----- CHECK FOR AN AUXILLIARY RADIATION
+Cdjwsep2010 Store FF with appropriate anomalous scattering
+          IF((MD3 .EQ. 14) .AND. (MD3TR .EQ. 2)) THEN
+            formfactors(1, (jz-1)*MD3TR+1+1) = RPART+STORE(M3+12)
+            formfactors(2, (jz-1)*MD3TI+1+1) = STORE(M3+13)
+          ENDIF
+csjwsep2010
+C--UPDATE FOR THE NEXT FORM FACTOR
+          M3=M3+MD3
+      end do !1050  CONTINUE
+C--AND NOW RETURN
+C1100  CONTINUE
+      RETURN
+      END
+      
+      SUBROUTINE XSCATTnewHR(SST, formfactors)
+      use store_mod, only: store
+      implicit none
+C--CALCULATE AND STORE THE SCATTERING FACTORS FOR THE ATOMS IN LIST 3
+C
+C  ST  THE VALUE OF SIN(THETA)/LAMBDA FOR THE CALCULATION
+C
+C--LIST 3 IS ASSUMED TO HAVE BEEN LOADED, AND THE RESULTS APPEAR AT
+C  'L3TR' AND 'L3TI' FOR THE REAL AND IMAGINARY COMPONENTS
+C  RESPECTIVELY.
+C
+C--
+c      INCLUDE 'ISTORE.INC'
+C
+c      INCLUDE 'STORE.INC'
+      INCLUDE 'XLST03.INC'
+      INCLUDE 'XUNITS.INC'
+    
+      real, intent(in) :: sst
+      real, dimension(:,:), allocatable, intent(out) :: formfactors
+      integer ju, jz
+      real rpart
+      character(4) :: atom_type
+C
+c      INCLUDE 'QSTORE.INC'
+C
+C--CHECK IF THERE ARE ANY FORM FACTORS STORED
+C      IF(N3)1100,1100,1000
+C--CALCULATE SIN(THETA)/LAMBDA SQUARED
+C1000  CONTINUE
+C--ASSIGN VARIOUS POINTERS
+      M3=L3
+      M3TR=L3TR
+      M3TI=L3TI
+      allocate(formfactors(2, n3*max(MD3TR, md3ti)))
+      formfactors=0.0
+C--LOOP OVER ACH FORM FACTOR TYPE IN TURN
+      DO JZ=1,N3 ! 1050
+        JU=M3+3
+        atom_type=transfer(store(m3), atom_type)
+C--COMPUTE THE INVARIANT PART
+          RPART = STORE(JU)*EXP(-STORE(JU+1)*SST)+STORE(JU+2)
+     2        *EXP(-STORE(JU+3)*SST)+STORE(JU+4)*EXP(-STORE(JU+5)*SST)
+     3        +STORE(JU+6)*EXP(-STORE(JU+7)*SST)+STORE(JU+8)
+C--COMPUTE THE REAL PART
+
+         ! Co 6600.000      -1.711848      0.6283829 
+         ! Mn 6572.000      -4.955494       3.925735
+         ! O  6600.000      6.8636276E-02  4.8890673E-02
+
+          If(atom_type=='MN  ') then
+              formfactors(1, (jz-1)*MD3TR+1) = RPART-4.955494
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=3.925735
+          else If(atom_type=='CO  ') then
+              formfactors(1, (jz-1)*MD3TR+1) = RPART-1.711848
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)= 0.6283829 
+          else If(atom_type=='O   ') then
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+6.8636276E-02
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=4.8890673E-02
+          else
+C--COMPUTE THE REAL PART
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+STORE(M3+1)
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=STORE(M3+2)
+          end if
+
+
+csjwsep2010
+C--UPDATE FOR THE NEXT FORM FACTOR
+          M3=M3+MD3
+      end do !1050  CONTINUE
+C--AND NOW RETURN
+C1100  CONTINUE
+      RETURN
+      END
+      SUBROUTINE XSCATTnewLR(SST, formfactors)
+      use store_mod, only: store
+      implicit none
+C--CALCULATE AND STORE THE SCATTERING FACTORS FOR THE ATOMS IN LIST 3
+C
+C  ST  THE VALUE OF SIN(THETA)/LAMBDA FOR THE CALCULATION
+C
+C--LIST 3 IS ASSUMED TO HAVE BEEN LOADED, AND THE RESULTS APPEAR AT
+C  'L3TR' AND 'L3TI' FOR THE REAL AND IMAGINARY COMPONENTS
+C  RESPECTIVELY.
+C
+C--
+c      INCLUDE 'ISTORE.INC'
+C
+c      INCLUDE 'STORE.INC'
+      INCLUDE 'XLST03.INC'
+      INCLUDE 'XUNITS.INC'
+    
+      real, intent(in) :: sst
+      real, dimension(:,:), allocatable, intent(out) :: formfactors
+      integer ju, jz
+      real rpart
+      character(4) :: atom_type
+C
+c      INCLUDE 'QSTORE.INC'
+C
+C--CHECK IF THERE ARE ANY FORM FACTORS STORED
+C      IF(N3)1100,1100,1000
+C--CALCULATE SIN(THETA)/LAMBDA SQUARED
+C1000  CONTINUE
+C--ASSIGN VARIOUS POINTERS
+      M3=L3
+      M3TR=L3TR
+      M3TI=L3TI
+      allocate(formfactors(2, n3*max(MD3TR, md3ti)))
+C--LOOP OVER ACH FORM FACTOR TYPE IN TURN
+      DO JZ=1,N3 ! 1050
+          JU=M3+3
+          atom_type=transfer(store(m3), atom_type)
+C--COMPUTE THE INVARIANT PART
+          RPART = STORE(JU)*EXP(-STORE(JU+1)*SST)+STORE(JU+2)
+     2        *EXP(-STORE(JU+3)*SST)+STORE(JU+4)*EXP(-STORE(JU+5)*SST)
+     3        +STORE(JU+6)*EXP(-STORE(JU+7)*SST)+STORE(JU+8)
+C--COMPUTE THE REAL PART
+
+         !O  6500.000      7.0322260E-02  5.0461698E-02
+         !Mn 6532.000      -6.735828      0.4651306 
+         !Co 6500.000      -1.637342      0.6458722 
+
+
+          If(atom_type=='MN  ') then
+              ! 1.8987ang -6.735828      0.4651306
+              formfactors(1, (jz-1)*MD3TR+1) = RPART-6.735828
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=0.4651306
+          else If(atom_type=='CO  ') then
+              ! 1.8987ang -6.735828      0.4651306
+              formfactors(1, (jz-1)*MD3TR+1) = RPART-1.637342
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=0.6458722
+          else If(atom_type=='O   ') then
+              ! 1.8987ang -6.735828      0.4651306
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+7.0322260E-02
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=5.0461698E-02
+          else
+C--COMPUTE THE REAL PART
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+STORE(M3+1)
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=STORE(M3+2)
+          end if
 C----- CHECK FOR AN AUXILLIARY RADIATION
 Cdjwsep2010 Store FF with appropriate anomalous scattering
           IF((MD3 .EQ. 14) .AND. (MD3TR .EQ. 2)) THEN

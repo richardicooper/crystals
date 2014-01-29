@@ -768,6 +768,7 @@ else
         call XSFLSC_calc(STORE(JO),JP-JO+1,istore(iresults), nresults, ierflg) ! CALL THE CALCULATION LINK
     else
         print *, 'sfls_type not implemented'
+        print *, SFLS_TYPE
         stop
     end if
 end if
@@ -1590,6 +1591,7 @@ tid=1
 
 !     To be replaced by GET_ENVIRONMENT_VARIABLE f2003 feature
 !     getenv is a deprecated extension      
+#if defined(_OPENMP)
 CALL GETENV('OMP_NUM_THREADS', buffer) 
 if(buffer/='    ') then
     read(buffer, '(I4)') i
@@ -1597,6 +1599,7 @@ if(buffer/='    ') then
         tid=i
     end if
 end if
+#endif
 
 allocate(normalmatrix(JP-JO+1,JP-JO+1, tid))
 allocate(designmatrix(JP-JO+1,storechunk*tid))
@@ -1732,7 +1735,7 @@ designmatrix=0.0d0
         maximum(8:9)=0.0
     end if    
 
-    allocate(temporaryderivatives(n12*jq))
+    allocate(temporaryderivatives((n12+1)*jq))
     temporaryderivatives=0.0d0
 
 !$OMP DO
@@ -2457,12 +2460,13 @@ end interface
 
 interface
     subroutine XSFLSX(tc, sst, &
-        &   g2, reflectiondata, temporaryderivatives)
+        &   g2, reflectiondata, temporaryderivatives, wave)
         implicit none
         real, intent(out) :: tc, sst
         real, intent(inout) :: g2
         real, dimension(:), intent(inout) :: reflectiondata
         double precision, dimension(:), intent(out) :: temporaryderivatives
+        real, intent(in) :: wave
     end subroutine
 end interface
 
@@ -2593,8 +2597,8 @@ integer, dimension(8) :: measuredtime
 ! Accumulation is done is double precision to avoid precision loss
 ! single precision seems to introduce errors of about 1e-3 in Fc and 
 ! other parameters
-double precision, dimension(:,:), allocatable :: designmatrix
-double precision, dimension(:,:,:), allocatable :: normalmatrix!, ref
+double precision, dimension(:,:), allocatable :: designmatrix, designmatrix_LR, designmatrix_HR
+double precision, dimension(:,:,:), allocatable :: normalmatrix, normalmatrix2!, ref
 ! tid is the number of threads
 integer :: tid
 integer, parameter :: storechunk=256
@@ -2602,7 +2606,7 @@ character(len=4) :: buffer
 
 !> Buffer holding reflections data of several reflections
 !! reflectionsdata_size reflections stored by columns (md6 values from m6 in original store)
-real, dimension(:,:), allocatable :: reflectionsdata
+real, dimension(:,:), allocatable :: reflectionsdata, reflectionsdata_LR, reflectionsdata_HR
 integer, dimension(:), allocatable :: batches, layers, l6wpointers, n6wpointers
 !> Number of reflections stores in the reflectionsdata buffer
 integer reflectionsdata_size
@@ -2613,10 +2617,26 @@ real, dimension(16) ::  minimum, maximum
 real, dimension(:), allocatable :: shiftsaccumulation
 integer iposn
 
-double precision, dimension(:), allocatable :: righthandside
+double precision, dimension(:), allocatable :: righthandside, righthandside2
 integer cpt
 
 double precision, dimension(:), allocatable :: temporaryderivatives
+
+! karim stuff
+integer myunit, io
+character(len=512) :: line
+integer, dimension(3) :: karimhkl
+real, dimension(5) :: karimintensity
+real, dimension(16) ::  minimum_shared_HR, maximum_shared_HR
+real, dimension(16) ::  minimum_shared_LR, maximum_shared_LR
+real, dimension(16) ::  summation_hr, summationsq_HR, summation_LR, summationsq_LR
+real, dimension(16) ::  minimum_HR, maximum_HR, minimum_LR, maximum_LR
+
+real SCALEB_HR, SCALEB_LR, SCALES_HR, SCALEG_HR, SCALES_LR, SCALEG_LR
+real SCALEK_HR, SCALEK_LR, SCALEW_HR, SCALEW_LR
+
+double precision, dimension(:), allocatable :: temporaryderivatives_HR
+double precision, dimension(:), allocatable :: temporaryderivatives_LR
 
 ierflg = 0
 
@@ -2733,6 +2753,7 @@ tid=1
 
 !     To be replaced by GET_ENVIRONMENT_VARIABLE f2003 feature
 !     getenv is a deprecated extension      
+#if defined(_OPENMP)
 CALL GETENV('OMP_NUM_THREADS', buffer) 
 if(buffer/='    ') then
     read(buffer, '(I4)') i
@@ -2740,8 +2761,12 @@ if(buffer/='    ') then
         tid=i
     end if
 end if
+#endif
+
+print *, 'Number of threads used: ', tid
 
 allocate(normalmatrix(JP-JO+1,JP-JO+1, tid))
+print *, 'design', JP-JO+1
 allocate(designmatrix(JP-JO+1,storechunk*tid))
 allocate(reflectionsdata(MD6+8+2,storechunk*tid))
 !md6+1 ac
@@ -2860,7 +2885,7 @@ designmatrix=0.0d0
     end if    
 
     if(allocated(temporaryderivatives)) deallocate(temporaryderivatives)
-    allocate(temporaryderivatives(n12*jq))
+    allocate(temporaryderivatives((n12+1)*jq))
     temporaryderivatives=0.0d0
 
 !$OMP DO schedule(guided, 16)
@@ -2896,11 +2921,11 @@ designmatrix=0.0d0
     JO=NO  ! Point JO back to beginning of PD list.
     JP=NP
     
-    call XSFLSX(tc, sst, g2, reflectionsdata(:,reflectionsdata_index), temporaryderivatives)
+    call XSFLSX(tc, sst, g2, reflectionsdata(:,reflectionsdata_index), temporaryderivatives, wave)
     
     call XAB2FC(reflectionsdata(:,reflectionsdata_index), scalew, designmatrix(:,reflectionsdata_index), temporaryderivatives)  ! DERIVE THE TOTALS AGAINST /FC/ FROM THOSE W.R.T. A AND B
     call XACRTnew(4, minimum, maximum, summation, summationsq, reflectionsdata(:,reflectionsdata_index))  ! ACCUMULATE THE /FO/ TOTALS
-
+    
 !--CHECK if WE SHOULD include EXTINCTION
     if(EXTINCT)THEN ! WE SHOULD include EXTINCTION
         A=MIN(1.,WAVE*sqrt(sST))
@@ -3121,16 +3146,16 @@ designmatrix=0.0d0
         maximum_shared(i)=max(maximum_shared(i), maximum(i))
     end do    
 
-    tid=0
-!$  tid=omp_get_thread_num()
+    tid=1
+!$  tid=omp_get_thread_num()+1
 
     ! Accumulating the normal matrix
     if(NEWLHS .and. &! ACCUMULATE THE LEFT HAND SIDES
     &   ISTORE(M33CD+12).EQ.0 .and. &! Just a normal accumulation.
     &   ISTORE(M33CD+13).NE.0)THEN    
         call DSYRK('L','N',JP-JO+1,storechunk, &
-        &   1.0d0, designmatrix(1,storechunk*tid+1), &
-        &   JP-JO+1,1.0d0,normalmatrix(1,1,tid+1),JP-JO+1)    
+        &   1.0d0, designmatrix(1,storechunk*(tid-1)+1), &
+        &   JP-JO+1,1.0d0,normalmatrix(1,1,tid),JP-JO+1)    
     end if
     
 !$OMP END PARALLEL
@@ -3140,18 +3165,511 @@ designmatrix=0.0d0
         call XSLRnew(reflectionsdata(:,reflectionsdata_index), &
         &   store, l6wpointers(reflectionsdata_index), n6wpointers(reflectionsdata_index))
     end do
+    
+    !print *, 'loop size', reflectionsdata_size, tid
 
 
 END do  ! END OF REFLECTION LOOP
 
-! Merge accumulation matrices
-! Only vectorized with gfortran 4.8 not 4.4
-do i=1, ubound(normalmatrix,2)
-    do j=2, ubound(normalmatrix,3)
-        normalmatrix(:,i,1)=normalmatrix(:,i,1)+normalmatrix(:,i,j)
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! START START START START START START START  !!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+print *, 'Karim stuff'
+
+
+minimum_shared_HR=huge(minimum_shared_HR)
+maximum_shared_HR=-huge(maximum_shared_HR)
+if(ND<0)THEN
+    minimum_shared_HR(8:9)=0.0
+    maximum_shared_HR(8:9)=0.0
+end if   
+minimum_shared_LR=huge(minimum_shared_LR)
+maximum_shared_LR=-huge(maximum_shared_LR)
+if(ND<0)THEN
+    minimum_shared_LR(8:9)=0.0
+    maximum_shared_LR(8:9)=0.0
+end if   
+
+tid=1
+allocate(designmatrix_HR(JP-JO+1,storechunk*tid))
+allocate(reflectionsdata_HR(MD6+8+2,storechunk*tid))
+allocate(designmatrix_LR(JP-JO+1,storechunk*tid))
+allocate(reflectionsdata_LR(MD6+8+2,storechunk*tid))
+allocate(normalmatrix2(JP-JO+1,JP-JO+1, tid))
+normalmatrix2=normalmatrix
+
+allocate(righthandside2(n11r))
+righthandside2=righthandside
+righthandside=0.0d0
+
+do i=1, ubound(normalmatrix2,2)
+    do j=2, ubound(normalmatrix2,3)
+        normalmatrix2(:,i,1)=normalmatrix2(:,i,1)+normalmatrix2(:,i,j)
     end do
 end do
+myunit=888
+open(myunit, file='normalmatrix')
+do i=1, ubound(normalmatrix2, 1)
+    write(myunit, *) normalmatrix2(:,i,1)
+end do
+close(myunit)
+normalmatrix=0.0d0
 
+print *, 'first nt', nt
+
+myunit=888
+open(myunit, file='fake_ratio.hkl')
+
+! skipping header
+do i=1,6
+    read(myunit, '(A)') line
+end do
+
+
+if(allocated(temporaryderivatives)) deallocate(temporaryderivatives)
+allocate(temporaryderivatives((n12+1)*jq))
+if(allocated(temporaryderivatives_HR)) deallocate(temporaryderivatives_HR)
+allocate(temporaryderivatives_HR((n12+1)*jq))
+if(allocated(temporaryderivatives_LR)) deallocate(temporaryderivatives_LR)
+allocate(temporaryderivatives_LR((n12+1)*jq))
+
+reflectionsdata_size=1
+do WHILE (reflectionsdata_size>0)  ! START OF THE LOOP OVER REFLECTIONS
+
+do reflectionsdata_index=1, storechunk*tid
+   READ(myunit, '(A)', IOSTAT=io)  line
+   IF (io /= 0) THEN
+      EXIT
+   ELSE
+      read(line, '(3I4, 4F12.2, F12.6)') karimhkl, karimintensity
+      !print *, karimhkl, karimintensity
+      ifNR=1
+   END IF
+
+    if(ifnr>=0) then
+        !print *, 's', reflectionsdata(:,reflectionsdata_index)
+        !store(m6:m6+md6-1)=reflectionsdata(:,reflectionsdata_index)
+
+        reflectionsdata_HR(:, reflectionsdata_index)=0.0
+        reflectionsdata_HR(1:3, reflectionsdata_index)=karimhkl
+        reflectionsdata_HR(4, reflectionsdata_index)=karimintensity(3)
+        
+        reflectionsdata_LR(:, reflectionsdata_index)=0.0
+        reflectionsdata_LR(1:3, reflectionsdata_index)=karimhkl
+        reflectionsdata_LR(4, reflectionsdata_index)=karimintensity(1)
+
+        reflectionsdata_HR(md6+9,reflectionsdata_index)=1.0
+        reflectionsdata_LR(md6+9,reflectionsdata_index)=1.0
+    
+        if(BATCHED) then ! CHECK IF THE BATCH SCALE FACTOR SHOULD BE USED
+            batches(reflectionsdata_index) = 0
+            reflectionsdata_HR(md6+10,reflectionsdata_index)=1.0!store(L5BS+batches(reflectionsdata_index))  ! FIND THE BATCH NUMBER AND SET THE SCALE
+            reflectionsdata_LR(md6+10,reflectionsdata_index)=1.0!store(L5BS+batches(reflectionsdata_index))  ! FIND THE BATCH NUMBER AND SET THE SCALE
+            if ( IERFLG .LT. 0 ) return !GO TO 19900
+        else
+            reflectionsdata_HR(md6+10,reflectionsdata_index)=1.0
+            reflectionsdata_LR(md6+10,reflectionsdata_index)=1.0
+        end if    
+    
+    else
+        exit
+    end if
+end do
+reflectionsdata_size=reflectionsdata_index-1
+
+designmatrix=0.0d0
+!print *, '-1', designmatrix(1,1)
+
+!$OMP PARALLEL default(none)&
+!$OMP& shared(nP, nO, layered, str11) &
+!$OMP& shared(batched, reflectionsdata_size) &
+!$OMP& shared(reflectionsdata_HR, reflectionsdata_LR, layers, batches, scaleo, nr) &
+!$OMP& shared(issprt, ncwu, md6, n12) &
+!$OMP& shared(extinct, wave, l12es, jr, jq, del, nu) &
+!$OMP& shared(pol1, pol2, ext, nd, nv, xvalur,LTEMPR, nsort, mdsort) &
+!$OMP& shared(refprint, l12o, l12ls, l12bs, m33cd, ncfpu1, ncfpu2) &
+!$OMP& shared(newlhs, l11, l12b, n12b, md12b, nresults, iresults, n11) &
+!$OMP& shared(ltempl, designmatrix, designmatrix_LR, designmatrix_HR, normalmatrix, store, istore) &
+!$OMP& shared(l6wpointers, n6wpointers, l6w, n6w) &
+!$OMP& shared(ILEVPR, ibadr) &  ! atomic
+!$OMP& firstprivate(smin, smax, g2, l5es, d) &
+!$OMP& firstprivate(jsort, lsort, r, red, tix, ext3) &
+!$OMP& firstprivate(jp,jo) &
+!$OMP& private(M5LS, ierflg, md12a) &
+!$OMP& private(scalek,scales,scalel, scaleb,scaleg,scalew) &
+!$OMP& private(scalek_HR,scales_HR, scaleb_HR,scaleg_HR,scalew_HR) &
+!$OMP& private(scalek_LR,scales_LR, scaleb_LR,scaleg_LR,scalew_LR) &
+!$OMP& private(tc, p, sst, m12) &
+!$OMP& private(ljx, temporaryderivatives,temporaryderivatives_HR, temporaryderivatives_LR) &
+!$OMP& private(tempr, m5bs, a, fcext) &
+!$OMP& private(path, delta, c, ext1, ext2, ext4, fcexs, df, wdf) &
+!$OMP& private(minimum, maximum, s, uj, rdjw, vj, wj, t, tid) &
+!$OMP& private(minimum_HR, maximum_HR, minimum_LR, maximum_LR) &
+!$OMP& shared(minimum_shared_HR, maximum_shared_HR, minimum_shared_LR, maximum_shared_LR) &
+!$OMP& reduction(max:REDMAX) &
+!$OMP& reduction(+: summation, summationsq, nt, fot, foabs, shiftsaccumulation) &
+!$OMP& reduction(+: summation_HR, summationsq_HR, summation_LR, summationsq_LR) &
+!$OMP& reduction(+: fct, dft, wdft, rw, sfofc, sfcfc, wsfofc, wsfcfc) &
+!$OMP& reduction(+: sfo, sfc, righthandside, aminf) 
+    
+    minimum=huge(minimum)
+    maximum=-huge(maximum)
+    if(ND<0)THEN
+        minimum(8:9)=0.0
+        maximum(8:9)=0.0
+    end if    
+    minimum_HR=huge(minimum_HR)
+    maximum_HR=-huge(maximum_HR)
+    if(ND<0)THEN
+        minimum_HR(8:9)=0.0
+        maximum_HR(8:9)=0.0
+    end if    
+    minimum_LR=huge(minimum_LR)
+    maximum_LR=-huge(maximum_LR)
+    if(ND<0)THEN
+        minimum_LR(8:9)=0.0
+        maximum_LR(8:9)=0.0
+    end if    
+
+    temporaryderivatives=0.0d0
+    temporaryderivatives_HR=0.0d0
+    temporaryderivatives_LR=0.0d0
+
+
+!$OMP DO schedule(guided, 16)
+    do reflectionsdata_index=1, reflectionsdata_size
+    !storetemp(M6:M6+MD6-1)=reflectionsdata(:,reflectionsdata_index)
+    !print *, storetemp(M6:M6+MD6-1)
+
+    if(.not. layered .and. .not. batched) then
+        scalel=1.0
+        scaleb=1.0
+        scalek=1.0
+        scales=1.0
+        scaleg=SCALEO
+    else
+        SCALEL=1.0
+        SCALEB_HR=reflectionsdata_HR(md6+10,reflectionsdata_index)
+        SCALEB_LR=1.0!reflectionsdata_LR(md6+10,reflectionsdata_index)
+
+        SCALEK=1.   ! SET UP THE SCALE FACTORS CORRECTLY
+        SCALES_HR=SCALEL*SCALEB_HR
+        SCALEG_HR=SCALEO*SCALES_HR
+        SCALES_LR=SCALEL*SCALEB_LR
+        SCALEG_LR=SCALEO*SCALES_LR
+    end if
+    if(SCALEG_HR .GT. 1e-6) then   ! CHECK IF THE SCALE IS ZERO
+        SCALEK_HR=1./SCALEG_HR   ! THE /FC/ SCALE FACTOR IS NOT ZERO  -  COMPUTE THE /FO/ SCALE FACTOR
+    end if
+    if(SCALEG_LR .GT. 1e-6) then   ! CHECK IF THE SCALE IS ZERO
+        SCALEK_LR=1./SCALEG_LR   ! THE /FC/ SCALE FACTOR IS NOT ZERO  -  COMPUTE THE /FO/ SCALE FACTOR
+    end if
+
+    !FO=reflectionsdata(1+3,reflectionsdata_index) ! SET UP /FO/ ETC. FOR THIS REFLECTION
+    !W=reflectionsdata(1+4,reflectionsdata_index) 
+    ! scalew = scaleg * w
+    SCALEW_HR=SCALEG_HR!*reflectionsdata_HR(1+4,reflectionsdata_index) 
+    SCALEW_LR=SCALEG_LR!*reflectionsdata_LR(1+4,reflectionsdata_index) 
+ 
+!    NM=0  ! INITIALISE THE HOLDING STACK, DUMP ENTRIES
+!    NN=0
+    JO=NO  ! Point JO back to beginning of PD list.
+    JP=NP
+    
+    call XSFLSX(tc, sst, g2, reflectionsdata_HR(:,reflectionsdata_index), temporaryderivatives_HR, 1.8871)
+    call XSFLSX(tc, sst, g2, reflectionsdata_LR(:,reflectionsdata_index), temporaryderivatives_LR, 1.8987)
+
+    !print *, 'HR1', reflectionsdata_HR(md6+1:md6+6, reflectionsdata_index)
+    !print *, 'LR2', reflectionsdata_LR(md6+1:md6+6,reflectionsdata_index)
+
+    !print *, SCALEB_HR, SCALEB_LR, SCALEG_HR, SCALEG_LR, scaleo
+    !print *, scalew_HR,scalew_LR
+    !print *, temporaryderivatives_HR
+    !print *, temporaryderivatives_LR
+    !stop
+    !print *, '0', designmatrix(1,1)
+    call XAB2FC(reflectionsdata_HR(:,reflectionsdata_index), 1.0, &
+    &   designmatrix_HR(:,reflectionsdata_index), temporaryderivatives_HR)  ! DERIVE THE TOTALS AGAINST /FC/ FROM THOSE W.R.T. A AND B
+    call XAB2FC(reflectionsdata_LR(:,reflectionsdata_index), 1.0, &
+    &   designmatrix_LR(:,reflectionsdata_index), temporaryderivatives_LR)  ! DERIVE THE TOTALS AGAINST /FC/ FROM THOSE W.R.T. A AND B
+    
+    !print *, reflectionsdata_HR(1:3,reflectionsdata_index), &
+    !&   reflectionsdata_HR(6,reflectionsdata_index), reflectionsdata_LR(6,reflectionsdata_index)
+    
+    ! derivative of ratio (u'v-uv')/v^2
+    if(reflectionsdata_LR(6,reflectionsdata_index)**2<1e-6) then
+        print *, 'Ooooops'
+        stop
+    else
+        do i=1, ubound(designmatrix,1)
+            designmatrix(i,reflectionsdata_index)= &
+            &   (designmatrix_HR(i,reflectionsdata_index)*reflectionsdata_LR(6,reflectionsdata_index) - &
+            &    reflectionsdata_HR(6,reflectionsdata_index)*designmatrix_LR(i,reflectionsdata_index) ) / &
+            &   reflectionsdata_LR(6,reflectionsdata_index)**2
+            !print *, 'deriv', i, designmatrix(i,reflectionsdata_index), &
+            !&   designmatrix_HR(i,reflectionsdata_index), &
+            !&   designmatrix_LR(i,reflectionsdata_index)
+        end do
+        !print *, designmatrix(1,reflectionsdata_index), designmatrix_HR(1,reflectionsdata_index), &
+        !&   designmatrix_HR(1,reflectionsdata_index)
+
+    end if
+    !print *, '1', designmatrix(1,1)
+
+    call XACRTnew(4, minimum_HR, maximum_HR, summation_HR, summationsq_HR, reflectionsdata_HR(:,reflectionsdata_index))  ! ACCUMULATE THE /FO/ TOTALS
+    call XACRTnew(4, minimum_LR, maximum_LR, summation_LR, summationsq_LR, reflectionsdata_LR(:,reflectionsdata_index))  ! ACCUMULATE THE /FO/ TOTALS
+
+!--CHECK if WE SHOULD include EXTINCTION
+    EXT4=1.
+    FCEXT=reflectionsdata_HR(1+5,reflectionsdata_index)/reflectionsdata_LR(1+5,reflectionsdata_index)
+!
+    FCEXS=FCEXT*SCALEG ! THE VALUE OF /FC/ AFTER SCALE FACTOR APPLIED
+!
+
+!    reflectionsdata(1+5,reflectionsdata_index)=FCEXT*SCALES ! STORE FC AND PHASE IN THE LIST 6 SLOTS
+
+
+    if(ND.GE.0)THEN ! CHECK IF THE PARTIAL CONTRIBUTIONS ARE TO BE OUTPUT
+        reflectionsdata_HR(1+7,reflectionsdata_index)=reflectionsdata_HR(1+7,reflectionsdata_index) + &
+        &   reflectionsdata_HR(MD6+1,reflectionsdata_index) + &
+        &   reflectionsdata_HR(MD6+2,reflectionsdata_index)*reflectionsdata_HR(MD6+6,reflectionsdata_index) ! STORE THE NEW CONTRIBUTIONS
+        reflectionsdata_HR(1+8,reflectionsdata_index)=reflectionsdata_HR(1+8,reflectionsdata_index) + &
+        &   reflectionsdata_HR(MD6+3,reflectionsdata_index)*reflectionsdata_HR(MD6+6,reflectionsdata_index) + &
+        &   reflectionsdata_HR(MD6+4,reflectionsdata_index)
+        reflectionsdata_LR(1+7,reflectionsdata_index)=reflectionsdata_LR(1+7,reflectionsdata_index) + &
+        &   reflectionsdata_LR(MD6+1,reflectionsdata_index) + &
+        &   reflectionsdata_LR(MD6+2,reflectionsdata_index)*reflectionsdata_LR(MD6+6,reflectionsdata_index) ! STORE THE NEW CONTRIBUTIONS
+        reflectionsdata_LR(1+8,reflectionsdata_index)=reflectionsdata_LR(1+8,reflectionsdata_index) + &
+        &   reflectionsdata_LR(MD6+3,reflectionsdata_index)*reflectionsdata_LR(MD6+6,reflectionsdata_index) + &
+        &   reflectionsdata_LR(MD6+4,reflectionsdata_index)
+
+        call XACRTnew(8, minimum_HR, maximum_HR, summation_HR, summationsq_HR, reflectionsdata_HR(:,reflectionsdata_index))  ! ACCUMULATE THE TOTALS FOR THE NEW PARTS
+        call XACRTnew(8, minimum_LR, maximum_LR, summation_LR, summationsq_LR, reflectionsdata_LR(:,reflectionsdata_index))  ! ACCUMULATE THE TOTALS FOR THE NEW PARTS
+        call XACRTnew(9, minimum_HR, maximum_HR, summation_HR, summationsq_HR, reflectionsdata_HR(:,reflectionsdata_index))
+        call XACRTnew(9, minimum_LR, maximum_LR, summation_LR, summationsq_LR, reflectionsdata_LR(:,reflectionsdata_index))
+    end if
+
+!        A=FO*W    ! ADD IN THE COMPUTED VALUES OF /FC/ ETC., TO THE OVERALL TOTALS
+! Add abs to deniminator
+    ! A = abs(FO)*w
+    A=abs(reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index))!*reflectionsdata(1+4,reflectionsdata_index)     ! ADD IN THE COMPUTED VALUES OF /FC/ ETC., TO THE OVERALL TOTALS
+    ! df = Fo - Fcexs
+    DF=reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index)-FCEXS
+    !WDF=reflectionsdata(1+4,reflectionsdata_index)*DF
+    S=SCALEK
+!
+    if(NV.GE.0)THEN ! 4500,4450,4450 ! CHECK IF WE REFINING AGAINST /FO/ **2
+!          A=ABS(FO)*FO*W  ! COMPUTE W-DELTA FOR /FO/ **2 REFINEMENT
+! remove abs Mar2009
+        ! A = Fo**2*w
+        A=(reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index))**2!*reflectionsdata(1+4,reflectionsdata_index)   ! COMPUTE W-DELTA FOR /FO/ **2 REFINEMENT
+        ! df = abs(fo)*Fo - Fcexs**2
+        DF=ABS(reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index))* &
+        &   reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index)-FCEXS*FCEXS
+        !WDF=reflectionsdata(1+4,reflectionsdata_index) *DF
+        S=SCALEK*SCALEK
+    end if
+    AMINF=AMINF!+WDF*WDF  ! COMPUTE THE MINIMISATION function
+
+! If #CALC, then L28 was adjusted earlier. Call KALLOW again to get normal R
+    NT=NT+1     ! UPDATE THE REFLECTION COUNTER FLAG
+    FOT=FOT+reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index)   ! COMPUTE THE TERMS FOR THE NORMAL R-VALUE
+    FOABS = FOABS + ABS(reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index))
+    FCT=FCT+FCEXS
+    DFT=DFT+ABS(ABS(reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index)) - FCEXS)
+    WDFT=WDFT!+WDF*WDF  ! COMPUTE THE TERMS FOR THE WEIGHTED R-VALUE
+    RW=RW+A*A
+    sfofc = sfofc + reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index) * fcext
+    sfcfc = sfcfc + fcext * fcext
+    !wsfofc = wsfofc + reflectionsdata_HR(1+4,reflectionsdata_index)  * reflectionsdata_HR(1+3,reflectionsdata_index) * fcext
+    !wsfcfc = wsfcfc + reflectionsdata_HR(1+4,reflectionsdata_index)  * fcext * fcext
+    wsfofc = wsfofc + reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index) * fcext
+    wsfcfc = wsfcfc + fcext * fcext
+!
+!
+    UJ=reflectionsdata_HR(1+3,reflectionsdata_index)/reflectionsdata_LR(1+3,reflectionsdata_index)*SCALEK
+    RDJW = ABS(WDF)
+
+  
+!--ADD THE CONTRIBUTIONS OF THE OVERALL PARAMETERS AND SCALE FACTORS.
+!  THESE ARE COMPUTED WITH RESPECT TO 'FC' MODifIED FOR EXTINCTION, RATH
+!  THAN WITH RESPECT TO 'FC'. THIS IS WHY THEY ALL CONTAIN '1./EXT3'
+!  TERM WHICH IS REMOVED LATER WHEN THE DERIVATIVES ARE MODifIED FOR
+!  EXTINCTION. THE FIRST PARAMETER IS THE OVERALL SCALE FACTOR.
+
+    !A=reflectionsdata_HR(1+4,reflectionsdata_index)*FCEXT*SCALES/EXT3
+    A=FCEXT*SCALES/EXT3
+    !print *, a
+
+!---- TO REFINE SCALE OF F**2 (RATHER THAN F), SQUARE AND
+!      TAKE OUT THE CORRECTION FACTOR TO BE APPLIED LATER, NEAR LABEL 5300
+
+    if(NV .GE. 0) A = A * FCEXT * SCALES / ( 2. * FCEXS )
+    LJX=0
+    M12=L12O
+
+    call XADDPD ( A, 0, JO, JQ, JR, md12a, m12, designmatrix(:,reflectionsdata_index))
+
+    !A=reflectionsdata(1+4,reflectionsdata_index) *FCEXS*TC/EXT3       ! OVERALL TEMPERATURE FACTORS NEXT
+    A= FCEXS*TC/EXT3       ! OVERALL TEMPERATURE FACTORS NEXT
+!    print *, '3.3',designmatrix(1,1)
+    call XADDPD ( A, 1, JO, JQ, JR, md12a, m12, designmatrix(:,reflectionsdata_index)) 
+    call XADDPD ( A, 2, JO, JQ, JR, md12a, m12, designmatrix(:,reflectionsdata_index)) 
+
+!    print *, '3.2',designmatrix(1,1)
+    A=-0.5*SCALEW*reflectionsdata_HR(1+5,reflectionsdata_index)**3/reflectionsdata_LR(1+5,reflectionsdata_index)**3*DELTA/EXT2   ! NOW THE EXTINCTION PARAMETER DERIVED BY LARSON
+    call XADDPD ( A, 5, JO, JQ, JR, md12a, m12, designmatrix(:,reflectionsdata_index)) 
+
+!    print *, '3.1',designmatrix(1,1)
+    if(layers(reflectionsdata_index).GE.0) then                 ! CHECK IF LAYER SCALES ARE BEING USED
+        !A=reflectionsdata_HR(1+4,reflectionsdata_index) *SCALEO*SCALEB*FCEXT/EXT3
+        A=SCALEO*SCALEB*FCEXT/EXT3
+        M12=L12LS
+        call XADDPD ( A, layers(reflectionsdata_index) , JO, JQ, JR, md12a, m12, designmatrix(:,reflectionsdata_index))  ! THE LAYER SCALES
+    end if
+
+!    print *, '3',designmatrix(1,1)
+    if(batches(reflectionsdata_index).GE.0) then           ! CHECK IF BATCH SCALES ARE BEING USED
+        !A=reflectionsdata_HR(1+4,reflectionsdata_index) *SCALEO*SCALEL*FCEXT/EXT3
+        A=SCALEO*SCALEL*FCEXT/EXT3
+        M12=L12BS
+        call XADDPD ( A, batches(reflectionsdata_index), JO, JQ, JR, md12a, m12, designmatrix(:,reflectionsdata_index))  ! THE BATCH SCALES  
+    end if
+
+!    print *, '4',designmatrix(1,1)
+    if ( ( NV.GE.0 ) .OR. EXTINCT ) then  ! Either FO^2, or extinction correction required.
+        if ( NV .GE. 0 ) designmatrix(:,reflectionsdata_index)=designmatrix(:,reflectionsdata_index)*2.0*FCEXS   ! Correct derivatives for refinement against Fo^2
+        if ( EXTINCT ) designmatrix(:,reflectionsdata_index)=designmatrix(:,reflectionsdata_index)*EXT3      ! Modify for extinction
+    end if
+
+    ! ACCUMULATE THE RIGHT HAND SIDES
+    ! accumulation done in double precision
+    call XADRHS(WDF,designmatrix(:,reflectionsdata_index),righthandside)  
+
+    if(NEWLHS)THEN   ! ACCUMULATE THE LEFT HAND SIDES
+
+        if (istore(M33CD+13).EQ.0) then
+            !call PARM_PAIRS_XLHS(storetemp(JO), JP-JO+1, &
+            !&   STR11(L11), N11, iresults, nresults, & 
+            !&   storetemp(L12B), N12B*MD12B, MD12B)
+            print *, 'not implemented (parm_pairs_xlhs)'
+            stop
+        else
+            ! Store a chunk of the design matrix
+            !designmatrix(:,reflectionsdata_index) = storetemp(JO:JP)
+            !print *, storetemp(JO:JP)
+    
+!           call XADLHS( storetemp(JO), JP-JO+1, STR11(L11), N11,
+!     1         storetemp(L12B), N12B*MD12B, MD12B )
+        end if
+    end if
+
+    !print *, '5',designmatrix(1,1)
+    ! save the new values in the buffer
+    ! writing is delayed outside the loop
+    !reflectionsdata(:,reflectionsdata_index)=storetemp(M6:M6+MD6-1)
+    !call XSLR(1)  ! STORE THE LAST REFLECTION ON THE DISC
+    !call XSLRnew(1, storetemp, l6wpointers(reflectionsdata_index), n6wpointers(reflectionsdata_index))
+    call XACRTnew(6, minimum_HR, maximum_HR, summation_HR, summationsq_HR, reflectionsdata_HR(:,reflectionsdata_index))  ! ACCUMULATE TOTALS FOR /FC/ 
+    call XACRTnew(7, minimum_HR, maximum_HR, summation_HR, summationsq_HR, reflectionsdata_HR(:,reflectionsdata_index))  ! AND THE PHASE
+    call XACRTnew(16,minimum_HR, maximum_HR, summation_HR, summationsq_HR, reflectionsdata_HR(:,reflectionsdata_index))
+    call XACRTnew(6, minimum_LR, maximum_LR, summation_LR, summationsq_LR, reflectionsdata_LR(:,reflectionsdata_index))  ! ACCUMULATE TOTALS FOR /FC/ 
+    call XACRTnew(7, minimum_LR, maximum_LR, summation_LR, summationsq_LR, reflectionsdata_LR(:,reflectionsdata_index))  ! AND THE PHASE
+    call XACRTnew(16,minimum_LR, maximum_LR, summation_LR, summationsq_LR, reflectionsdata_LR(:,reflectionsdata_index))
+
+    shiftsaccumulation=shiftsaccumulation+designmatrix(:,reflectionsdata_index)
+    
+    print *, 'hkl Fo^2 Fc^2', nint(reflectionsdata_HR(1:3,reflectionsdata_index)), &
+    &   reflectionsdata_HR(4,reflectionsdata_index), reflectionsdata_LR(4,reflectionsdata_index), &
+    &   reflectionsdata_HR(6,reflectionsdata_index)**2, reflectionsdata_LR(6,reflectionsdata_index)**2
+    end do
+!$OMP END DO
+    
+    ! merge minimum and maximum
+    do i=1, 16
+!$OMP ATOMIC      
+        minimum_shared_HR(i)=min(minimum_shared_HR(i), minimum_HR(i))
+!$OMP ATOMIC      
+        minimum_shared_LR(i)=min(minimum_shared_LR(i), minimum_LR(i))
+!$OMP ATOMIC          
+        maximum_shared_HR(i)=max(maximum_shared_HR(i), maximum_HR(i))
+!$OMP ATOMIC          
+        maximum_shared_LR(i)=max(maximum_shared_LR(i), maximum_LR(i))
+    end do    
+
+    tid=1
+!$  tid=omp_get_thread_num()+1
+
+    ! Accumulating the normal matrix
+    !print *, designmatrix(1,1)
+    !print *, sum(designmatrix(1,:))
+    !print *, designmatrix(1,1)
+    if(NEWLHS .and. &! ACCUMULATE THE LEFT HAND SIDES
+    &   ISTORE(M33CD+12).EQ.0 .and. &! Just a normal accumulation.
+    &   ISTORE(M33CD+13).NE.0)THEN    
+        call DSYRK('L','N',JP-JO+1,storechunk, &
+        &   1.0d0, designmatrix(1,storechunk*(tid-1)+1), &
+        &   JP-JO+1,1.0d0,normalmatrix(1,1,tid),JP-JO+1)    
+    end if
+    
+!$OMP END PARALLEL
+
+
+END do  ! END OF REFLECTION LOOP
+
+print *, 'SCALEW_HR', SCALEW_HR, SCALEO, SCALES_HR, SCALEL, SCALEB_HR
+
+close(myunit)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! END END END END END END END END END END !!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+
+
+! Merge accumulation matrices
+! Only vectorized with gfortran 4.8 not 4.4
+if(ubound(normalmatrix,3)>1) then
+    do i=1, ubound(normalmatrix,2)
+        do j=2, ubound(normalmatrix,3)
+            normalmatrix(:,i,1)=normalmatrix(:,i,1)+normalmatrix(:,i,j)
+        end do
+    end do
+end if
+
+myunit=888
+open(myunit, file='normalmatrix-ratio')
+do i=1, ubound(normalmatrix, 1)
+    write(myunit, *) normalmatrix(:,i,1)
+    normalmatrix(:,i,1)=normalmatrix(:,i,1)+normalmatrix2(:,i,1)
+end do
+close(myunit)
+righthandside=righthandside+righthandside2
 
 !!!!!!!!!!!!!!!!!!!!!!!!!
 ! putting back values in original storage
@@ -3992,7 +4510,7 @@ dsfrad=((cos(4*pi*stsp*store(m5asp+8)) &
 end
 
 !CODE FOR XSFLSX
-subroutine XSFLSX(tc, sst, g2, reflectiondata, temporaryderivatives)
+subroutine XSFLSX(tc, sst, g2, reflectiondata, temporaryderivatives, wave)
 !
 !--MAIN S.F.L.S. LOOP  -  CALCULATES A AND B AND THEIR DERIVATIVES
 !
@@ -4063,6 +4581,7 @@ real, intent(in) :: g2
 double precision, dimension(:), intent(out) :: temporaryderivatives
 real, dimension(:,:), allocatable :: formfactors
 real, dimension(:), allocatable :: storem2t
+real, intent(in) :: wave
 
 integer m12, md12a
 
@@ -4089,6 +4608,20 @@ interface
 end interface
 interface
     subroutine XSCATTnew(ST, formfactors)
+    implicit none
+    real, intent(in) :: st
+    real, dimension(:,:), allocatable, intent(out) :: formfactors    
+    end subroutine
+end interface
+interface
+    subroutine XSCATTnewHR(ST, formfactors)
+    implicit none
+    real, intent(in) :: st
+    real, dimension(:,:), allocatable, intent(out) :: formfactors    
+    end subroutine
+end interface
+interface
+    subroutine XSCATTnewLR(ST, formfactors)
     implicit none
     real, intent(in) :: st
     real, dimension(:,:), allocatable, intent(out) :: formfactors    
@@ -4165,8 +4698,15 @@ end if
 !  l3tr and l3ti the real and imaginary components of the scattering factor
 !
 if(N3>0) then
-    call XSCATTnew(SST, formfactors)  ! CALCULATE THE FORM FACTORS
+    if(wave==1.8871) then
+         call XSCATTnewHR(SST, formfactors)  ! CALCULATE THE FORM FACTORS
+    else if (wave==1.8987) then
+         call XSCATTnewLR(SST, formfactors)  ! CALCULATE THE FORM FACTORS
+    else
+         call XSCATTnew(SST, formfactors)  ! CALCULATE THE FORM FACTORS
+    end if
 end if
+
 !      write(NCWU,'(A,F16.9,1x,Z0)')'ST:',ST,ST
 !      write(NCWU,'(A,4(Z0,1X,F20.16,1X))')'COS consts:',C0,C0,C1,C1,
 !     1            C2,C2,C3,C3
@@ -4207,6 +4747,7 @@ end do
 !
 M5A=L5
 do LJY=1,N5
+
     AT=0.  ! CLEAR THE ACCUMULATION VARIABLES
     BT=0.
 
@@ -4242,7 +4783,7 @@ do LJY=1,N5
 #endif
         TFOCC=T*FOCC
     end if
-
+    
 !
 ! loop cycling over the different equivalent reflections for this atom
 !
@@ -4426,7 +4967,7 @@ do LJY=1,N5
                     else                 ! UNITY, CENTRO AND NO ANOMALOUS DISPERSION
                         do LJW=LJU,LJV,MD12A
                             LJT=ISTORE(LJW)
-                            temporaryderivatives(LJT-JR+1)=temporaryderivatives(LJT-JR+1)+ALPD(M12A-1)
+                            temporaryderivatives(LJT-JR+1+JQ)=temporaryderivatives(LJT-JR+1+JQ)+ALPD(M12A-1)
                             M12A=M12A+1
                         end do
                     end if
@@ -4462,7 +5003,7 @@ do LJY=1,N5
                     else                 ! NON-UNITY, CENTRO AND NO ANOMALOUS DISPERSION
                         do LJW=LJU,LJV,MD12A
                             LJT=ISTORE(LJW)
-                            temporaryderivatives(LJT-JR+1)=temporaryderivatives(LJT-JR+1)+ALPD(M12A-1)*STORE(LJW+1)
+                            temporaryderivatives(LJT-JR+1+JQ)=temporaryderivatives(LJT-JR+1+JQ)+ALPD(M12A-1)*STORE(LJW+1)
                             M12A=M12A+1
                         end do
                     end if
@@ -4573,23 +5114,23 @@ if(SFLS_TYPE .EQ. SFLS_REFINE) then   ! CHECK IF WE ARE DOING REFINEMENT
     TEMP = SCALEW / reflectiondata(1+5)   ! TO PERMANENT STORE
     COSP = ACT * TEMP
     SINP = BCT * TEMP
-    N = ubound(partialderivatives, 1)
+    N = ubound(partialderivatives, 1)+1
 
     if ( CENTRO .EQV. ANOMAL ) then ! NON-CENTRO WITHOUT ANOMALOUS DISPERSION
                                     ! OR CENTRO WITH ANOMALOUS
-        partialderivatives=temporaryderivatives(1:N*JQ:JQ)*COSP+temporaryderivatives(1+1:N*JQ+1:JQ)*SINP
+        partialderivatives=temporaryderivatives(1+JQ:N*JQ:JQ)*COSP+temporaryderivatives(1+1+JQ:N*JQ+1:JQ)*SINP
         ! look like dead code
         !STORE(JN+1)=0.0
         !STORE(JN)=0.0
     else if ( CENTRO .AND. (.NOT. ANOMAL) ) then ! CENTRO WITHOUT ANOMALOUS DISPERSION
         
-        partialderivatives=temporaryderivatives(1:N*JQ:JQ)*COSP
+        partialderivatives=temporaryderivatives(1+JQ:N*JQ:JQ)*COSP
         ! look like dead code
         !STORE(JN)=0.0
     else                              ! NON-CENTRO WITH ANOMALOUS DISPERSION
         partialderivatives= &
-        &   ( temporaryderivatives(1:N*JQ:JQ) + Temporaryderivatives(1+2:N*JQ+2:JQ) )*COSP + &
-        &   ( temporaryderivatives(1+1:N*JQ+1:JQ) + temporaryderivatives(1+3:N*JQ+3:JQ) )*SINP
+        &   ( temporaryderivatives(1+JQ:N*JQ:JQ) + Temporaryderivatives(1+2+JQ:N*JQ+2:JQ) )*COSP + &
+        &   ( temporaryderivatives(1+1+JQ:N*JQ+1:JQ) + temporaryderivatives(1+3+JQ:N*JQ+3:JQ) )*SINP
         ! look like dead code
         !STORE(JN:JN+3)=0.0
     end if
