@@ -1,5 +1,8 @@
 
-c $Log: not supported by cvs2svn $
+c $Log: regular.F,v $
+c Revision 1.72  2013/03/28 13:30:12  djw
+c Restore old format expressions
+c
 c Revision 1.71  2013/03/28 12:27:23  djw
 c Increase field width for torsion angle differences
 c

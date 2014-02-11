@@ -10,7 +10,10 @@
 
 //BIG NOTICE: PlotData is not a CrGUIElement, it's just data to be
 //            drawn onto a CrPlot. You can attach it to a CrPlot.
-// $Log: not supported by cvs2svn $
+// $Log: ccplotdata.cc,v $
+// Revision 1.32  2012/09/03 12:30:21  rich
+// Draw axis at x=0 for scatter plots.
+//
 // Revision 1.31  2009/07/24 06:41:59  djw
 // Change colours in charts
 //
@@ -143,16 +146,16 @@
 using namespace std;
 #include    <math.h>
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 #include <wx/thread.h>
 // These macros are being defined somewhere. They shouldn't be.
 
-#ifdef GetCharWidth
- #undef GetCharWidth
-#endif
-#ifdef DrawText
- #undef DrawText
-#endif
+ #ifdef GetCharWidth
+  #undef GetCharWidth
+ #endif
+ #ifdef DrawText
+  #undef DrawText
+ #endif
 #endif
 
 list<CcPlotData*> CcPlotData::sm_PlotList;

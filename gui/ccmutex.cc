@@ -6,7 +6,10 @@
  *
  */
  
- // $Log: not supported by cvs2svn $
+ // $Log: ccmutex.cc,v $
+ // Revision 1.2  2011/05/17 14:44:46  rich
+ // Remove exceptions
+ //
  // Revision 1.1  2005/02/02 15:27:23  stefan
  // 1. Initial addition to crystals. A group of classes for threading.
  //
@@ -19,14 +22,14 @@
  */
 CcMutex::CcMutex()
 {
-	#if defined(__CR_WIN__)
+	#if defined(CRY_USEMFC)
 		iMutex = CreateMutex(NULL, false, NULL);
 	#endif
 }
 
 CcMutex::~CcMutex()
 {
-	#if defined(__CR_WIN__)
+	#if defined(CRY_USEMFC)
 	CloseHandle(iMutex);
 	#endif
 }
@@ -34,7 +37,7 @@ CcMutex::~CcMutex()
 void CcMutex::Lock() //throw(mutex_error)
 {
 	error_type tError;
-	#if defined(__CR_WIN__)
+	#if defined(CRY_USEMFC)
 		if ((tError = WaitForSingleObject( iMutex, INFINITE )) != WAIT_OBJECT_0)
 	#else
 	    if ((tError = iMutex.Lock()) != wxMUTEX_NO_ERROR)
@@ -45,7 +48,7 @@ void CcMutex::Lock() //throw(mutex_error)
 bool CcMutex::TryLock() // throw(mutex_error)
 {
 	error_type tError;
-	#if defined(__CR_WIN__)
+	#if defined(CRY_USEMFC)
 		tError = WaitForSingleObject( iMutex, 0 );
 		if (tError == WAIT_TIMEOUT)
 			return false;
@@ -63,7 +66,7 @@ bool CcMutex::TryLock() // throw(mutex_error)
 void CcMutex::Unlock() //throw(mutex_error)
 {
 	unsigned int tError;
-	#if defined(__CR_WIN__)
+	#if defined(CRY_USEMFC)
 		if ((tError = (unsigned int)ReleaseMutex( iMutex )) == 0)
 	#else
 		if ((tError = iMutex.Unlock()) != wxMUTEX_NO_ERROR)

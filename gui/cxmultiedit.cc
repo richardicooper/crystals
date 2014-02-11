@@ -4,7 +4,10 @@
 //   Filename:  CxMultiEdit.cc
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxmultiedit.cc,v $
+//   Revision 1.27  2011/03/04 05:58:30  rich
+//   Fix font storage on wx
+//
 //   Revision 1.26  2008/09/22 12:31:37  rich
 //   Upgrade GUI code to work with latest wxWindows 2.8.8
 //   Fix startup crash in OpenGL (cxmodel)
@@ -67,15 +70,15 @@ using namespace std;
 #include    "crmultiedit.h"
 #include    "crgrid.h"
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 // These macros are being defined somewhere. They shouldn't be.
 
-#ifdef GetCharWidth
- #undef GetCharWidth
-#endif
-#ifdef DrawText
- #undef DrawText
-#endif
+ #ifdef GetCharWidth
+  #undef GetCharWidth
+ #endif
+ #ifdef DrawText
+  #undef DrawText
+ #endif
 #endif
 
 
@@ -84,12 +87,11 @@ int CxMultiEdit::mMultiEditCount = kMultiEditBase;
 CxMultiEdit *   CxMultiEdit::CreateCxMultiEdit( CrMultiEdit * container, CxGrid * guiParent )
 {
         CxMultiEdit *theMEdit = new CxMultiEdit (container);
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
         theMEdit->Create(ES_LEFT| ES_AUTOHSCROLL| ES_AUTOVSCROLL| WS_VSCROLL| WS_HSCROLL| WS_VISIBLE| WS_CHILD| ES_MULTILINE, CRect(0,0,10,10), guiParent, mMultiEditCount++);
         theMEdit->ModifyStyleEx(NULL,WS_EX_CLIENTEDGE,0);
         theMEdit->Init();
-#endif
-#ifdef __BOTHWX__
+#else
         theMEdit->Create(guiParent, -1, "EditBox", wxPoint(0,0), wxSize(10,10), wxTE_MULTILINE);
 #endif
         return theMEdit;
@@ -111,10 +113,9 @@ CxMultiEdit::~CxMultiEdit()
 
 void CxMultiEdit::CxDestroyWindow()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     DestroyWindow();
-#endif
-#ifdef __BOTHWX__
+#else
     Destroy();
 #endif
 }
@@ -123,18 +124,17 @@ void CxMultiEdit::CxDestroyWindow()
 void  CxMultiEdit::SetText( const string & cText )
 {
 // Add the text.
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       int oldend = GetWindowTextLength();
       SetSel( oldend, oldend );
       ReplaceSel(cText.c_str());
-#endif
-#ifdef __BOTHWX__
+#else
       AppendText(cText.c_str());
 #endif
 
 //Now scroll the text so that the last line is at the bottom of the screen.
 //i.e. so that the line at lastline-firstvisline is the first visible line.
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 /*      int charheight = mHeight;
       LineScroll ( GetLineCount() - GetFirstVisibleLine() - (int)( (float)GetHeight() / (float)charheight ) );
 */
@@ -153,8 +153,7 @@ void  CxMultiEdit::SetText( const string & cText )
       }
       SetRedraw(true);
       Invalidate();
-#endif
-#ifdef __BOTHWX__
+#else
       ShowPosition ( GetLastPosition () );
 #endif
 }
@@ -162,10 +161,10 @@ void  CxMultiEdit::SetText( const string & cText )
 
 int CxMultiEdit::GetNLines()
 {
- #ifdef __CR_WIN__
+ #ifdef CRY_USEMFC
     return GetLineCount();
  #endif          
- #ifdef __BOTHWX__
+ #ifdef CRY_USEWX
     return GetNumberOfLines();
  #endif
 }
@@ -181,24 +180,24 @@ int CxMultiEdit::GetIdealHeight()
 
 void CxMultiEdit::SetIdealHeight(int nCharsHigh)
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       mIdealHeight = nCharsHigh * mHeight;
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       mIdealHeight = nCharsHigh * GetCharHeight();
 #endif
 }
 
 void CxMultiEdit::SetIdealWidth(int nCharsWide)
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     CClientDC cdc(this);
     TEXTMETRIC textMetric;
     cdc.GetTextMetrics(&textMetric);
       int owidth = textMetric.tmAveCharWidth;
       mIdealWidth = nCharsWide * owidth;
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       mIdealWidth = nCharsWide * GetCharWidth();
 #endif
 }
@@ -215,19 +214,19 @@ void CxMultiEdit::Focus()
     SetFocus();
 }
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 BEGIN_MESSAGE_MAP(CxMultiEdit, CRichEditCtrl)
     ON_WM_CHAR()
 END_MESSAGE_MAP()
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 //wx Message Table
 BEGIN_EVENT_TABLE(CxMultiEdit, wxTextCtrl)
       EVT_CHAR( CxMultiEdit::OnChar )
 END_EVENT_TABLE()
 #endif
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 void CxMultiEdit::OnChar( UINT nChar, UINT nRepCnt, UINT nFlags )
 {
     NOTUSED(nRepCnt);
@@ -250,7 +249,7 @@ void CxMultiEdit::OnChar( UINT nChar, UINT nRepCnt, UINT nFlags )
     }
 }
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 void CxMultiEdit::OnChar( wxKeyEvent & event )
 {
       switch(event.GetKeyCode())
@@ -280,12 +279,12 @@ void CxMultiEdit::Spew()
 //Send all text to crystals a line at a time.
     char theLine[80];
     int line = 0;
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     while ( LineIndex(line) >= 0 )
     {
        int cp = GetLine(line, theLine, 79);
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
     for (int i=0; i<GetNumberOfLines(); i++)
     {
        wxString aline = GetLineText(i);
@@ -308,11 +307,11 @@ void CxMultiEdit::Spew()
 
 void CxMultiEdit::Empty()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       SetSel( 0, GetWindowTextLength() );
       Clear();
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       Clear();
 #endif
 }
@@ -320,7 +319,7 @@ void CxMultiEdit::Empty()
 void CxMultiEdit::SetFontHeight( int height )
 {
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       CHARFORMAT cf;
       cf.dwMask = ( CFM_SIZE ) ; //Use the CFM_SIZE attribute
       mHeight = (int)((height + 20) / 10.0);
@@ -335,7 +334,7 @@ void CxMultiEdit::SetFontHeight( int height )
 
 void CxMultiEdit::Init()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     CHARFORMAT cf;
     GetDefaultCharFormat( cf );
     string face = (CcController::theController)->GetKey( "FontFace" );
@@ -352,7 +351,7 @@ void CxMultiEdit::Init()
 #endif
 
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
     wxFont* pFont = new wxFont(12,wxMODERN,wxNORMAL,wxNORMAL);
 #ifndef _WINNT
     *pFont = wxSystemSettings::GetFont( wxSYS_ANSI_FIXED_FONT );
@@ -373,14 +372,14 @@ void CxMultiEdit::Init()
 
 }
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 void CxMultiEdit::SaveAs(string filename)
 {
     SaveFile( filename.c_str() );
 }
 #endif
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 void CxMultiEdit::SaveAs(string filename)
 {
     CFile file;

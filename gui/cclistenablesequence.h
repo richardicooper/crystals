@@ -6,7 +6,10 @@
  *
  */ 
  
- //   $Log: not supported by cvs2svn $
+ //   $Log: cclistenablesequence.h,v $
+ //   Revision 1.2  2012/03/26 11:34:00  rich
+ //   Removed some unnecessary templating.
+ //
  //   Revision 1.1  2005/02/04 17:21:40  stefan
  //   1. A set of classes to extent CcSafeDeque to allow easy change notification.
  //   2. A set of classese to more generalise CcSafeDeques uses.

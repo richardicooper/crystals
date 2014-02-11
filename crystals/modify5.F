@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: modify5.F,v $
+C Revision 1.63  2013/11/04 15:22:00  rich
+C Use non-date seed for perturb.
+C
 C Revision 1.62  2013/11/01 16:37:04  rich
 C Use fixed random seed for XRAND or tests break.
 C

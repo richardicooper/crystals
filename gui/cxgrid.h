@@ -7,7 +7,10 @@
 //   Filename:  CxGrid.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxgrid.h,v $
+//   Revision 1.15  2012/05/11 10:13:31  rich
+//   Various patches to wxWidget version to catch up to MFc version.
+//
 //   Revision 1.14  2011/05/16 10:56:32  rich
 //   Added pane support to WX version. Added coloured bonds to model.
 //
@@ -43,16 +46,14 @@
 //Insert your own code here.
 #include    "crguielement.h"
 
-#ifdef __CR_WIN__
-#include    <afxwin.h>
-#define BASEGRID CWnd
-#endif
-
-#ifdef __BOTHWX__
-#include <wx/window.h>
-#include <wx/control.h>
-#include <wx/font.h>
-#define BASEGRID wxPanel
+#ifdef CRY_USEMFC
+ #include    <afxwin.h>
+ #define BASEGRID CWnd
+#else
+ #include <wx/window.h>
+ #include <wx/control.h>
+ #include <wx/font.h>
+ #define BASEGRID wxPanel
 #endif
 
 #include    "cxradiobutton.h"
@@ -69,8 +70,8 @@ class CxGrid : public BASEGRID
 
       public:
         static CxGrid * CreateCxGrid( CrGrid * container, CxGrid * guiParent );
-            CxGrid( CrGrid * container );
-            ~CxGrid();
+        CxGrid( CrGrid * container );
+        ~CxGrid();
         void    SetText( const string & text );
         void    SetGeometry( const int top, const int left, const int bottom, const int right );
         void CxDestroyWindow();
@@ -85,21 +86,18 @@ class CxGrid : public BASEGRID
         CrGUIElement *  ptr_to_crObject;
         static int mGridCount;
 
-#ifdef __BOTHWX__
-            static wxFont* mp_font;
-#endif
 
-#ifdef __CR_WIN__
-  protected:
-    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    DECLARE_MESSAGE_MAP()
-#endif
-#ifdef __BOTHWX__
-  public:
-    void OnSize ( wxSizeEvent & event );
-    void OnChar(wxKeyEvent & event );
-    DECLARE_EVENT_TABLE()
+#ifdef CRY_USEMFC
+	protected:
+		afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+		afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+		DECLARE_MESSAGE_MAP()
+#else
+	public:
+         static wxFont* mp_font;
+		void OnSize ( wxSizeEvent & event );
+		void OnChar(wxKeyEvent & event );
+		DECLARE_EVENT_TABLE()
 #endif
     
 

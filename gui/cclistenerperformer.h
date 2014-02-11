@@ -6,7 +6,11 @@
  *
  */
  
- //   $Log: not supported by cvs2svn $
+ //   $Log: cclistenerperformer.h,v $
+ //   Revision 1.1  2005/02/04 17:21:40  stefan
+ //   1. A set of classes to extent CcSafeDeque to allow easy change notification.
+ //   2. A set of classese to more generalise CcSafeDeques uses.
+ //
  
 #if !defined(CcListenerPerformer_H__)
 #define CcListenerPerformer_H__

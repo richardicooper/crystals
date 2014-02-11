@@ -1413,7 +1413,7 @@ C -- PRODUCE DISPLAY IF REQUIRED
 C
       IF ( DISPL6 ) THEN
         IF ( N6R .GE. (N6D-1) ) THEN
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_)&& !defined(_INW_)
+#if CRY_NOGUI
           WRITE ( CMON,1505)
           CALL XPRVDU(NCVDU, 1, 0)
           WRITE(NCVDU,1505)
@@ -1421,7 +1421,7 @@ C
 1505      FORMAT ( 15X ,  12X, 'Processing reflections ')
 C          CALL VGACOL ( 'BOL', 'YEL', 'BLA' )
            CALL OUTCOL(6)
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_)&& !defined(_INW_)
+#if CRY_NOGUI
           WRITE(NCVDU,'(15X,''^'',$)')
 #endif
           NSTAR = 1

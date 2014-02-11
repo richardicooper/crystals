@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: outer.F,v $
+C Revision 1.23  2012/03/23 14:05:55  rich
+C Intel compiler platform (INW) support.
+C
 C Revision 1.22  2006/03/14 18:02:34  arie
 C SLight cosmetic change for archive and retrieve option
 C

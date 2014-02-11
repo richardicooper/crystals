@@ -2,22 +2,30 @@
 
 enable_language(Fortran)
 
-add_definitions(-D_GIL_)
+# add_definitions(-D_GIL_)
+add_definitions(-D_MIN_)
+add_definitions(-DCRY_GUI)
+add_definitions(-DCRY_OSWIN32)
+add_definitions(-DCRY_GNU)
+add_definitions(-fno-sign-zero)
 add_definitions(-D_GNUF77_)
-add_definitions(-D__WXMAC__)
-add_definitions(-D__WXOSX__)
-add_definitions(-D__WXOSX_COCOA__)
-add_definitions(-D__WXUSINGDLL)
+#add_definitions(-D__WXMAC__)
+#add_definitions(-D__WXOSX__)
+#add_definitions(-D__WXOSX_COCOA__)
+#add_definitions(-D__WXUSINGDLL)
 add_definitions(-std=legacy)
 add_definitions(-fno-automatic)
 add_definitions(-fno-inline)
 add_definitions(-fexceptions)
 add_definitions(-D _HOL_)
+add_definitions(-I ../sleef)
 #add_definitions(-mmacosx-version-min=10.7)
 #add_definitions(-arch x86_64)
 
 
-add_library(CrystalsFortran STATIC 
+add_library(CrystalsFortran OBJECT
+solve_helper.F90
+mrgrnk.f90
 absorb.F
 accumula.F
 alter5.F
@@ -96,3 +104,6 @@ vcv.F
 weight.F
 lapack.F
 )
+
+
+SET_SOURCE_FILES_PROPERTIES(lapack.F PROPERTIES COMPILE_FLAGS -O0)

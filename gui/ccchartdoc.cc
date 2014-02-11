@@ -16,7 +16,10 @@
 //            drawing commands. Note again - it is not a CrGUIElement,
 //            it has no graphical presence, nor a complimentary Cx- class
 
-// $Log: not supported by cvs2svn $
+// $Log: ccchartdoc.cc,v $
+// Revision 1.25  2012/03/23 15:58:10  rich
+// Use FORCALL to avoid ifdefs.
+//
 // Revision 1.24  2011/05/17 14:43:05  rich
 // Fix missing semi-colon.
 //
@@ -101,8 +104,8 @@
 #include   <list>
 using namespace std;
 
-#ifdef __BOTHWX__
-#include <wx/thread.h>
+#ifdef CRY_USEWX
+ #include <wx/thread.h>
 #endif
 
 list<CcChartDoc*> CcChartDoc::sm_ChartDocList;
@@ -663,7 +666,7 @@ void FORCALL (fastclear) ( )
 
 void FORCALL(fastshow) ( )
 {
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       ::wxMutexGuiEnter();
 #endif
       m_thread_critical_section.Enter();
@@ -674,7 +677,7 @@ void FORCALL(fastshow) ( )
 			m_thread_critical_section.Leave();
 	  }
       m_thread_critical_section.Leave();
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       ::wxMutexGuiLeave();
 #endif
 }

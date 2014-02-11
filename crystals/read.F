@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: read.F,v $
+C Revision 1.67  2013/06/11 12:30:39  pascal
+C Linux changes
+C
 C Revision 1.66  2012/10/19 12:45:13  djw
 C Make Script not found message less frightening
 C
@@ -414,12 +417,10 @@ C
       IF ( LPRMPT ) THEN
         IRDLIN = 0
         IF (ITYPFL .EQ. 1 .AND. NCRU .EQ. 5)  THEN
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
           CALL XPRMPT ( NCVDU , '!' )
 #else
           WRITE(CMON,'(A)')
-#endif
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_) || defined(_INW_)
      1     '^^CO SAFESET [ XPRMPT TEXT ''!'' ]'
           CALL XPRVDU(NCVDU,1,0)
           WRITE(CMON,'(A)')
@@ -430,12 +431,10 @@ C
           CALL XPRVDU (NCVDU,1,0)
 #endif
         ELSE
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
           CALL XPRMPT ( NCVDU , '>' )
 #else
           WRITE(CMON,'(A)')
-#endif
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_) || defined(_INW_)
      1     '^^CO SAFESET [ XPRMPT TEXT ''>'' ]'
           CALL XPRVDU(NCVDU,1,0)
           WRITE(CMON,'(A)')
@@ -456,7 +455,7 @@ C If in script mode, set flag.
         END IF
 C Update status information for GUI.
 
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_) || defined(_INW_)
+#ifdef CRY_GUI
         IF (ISSTML .EQ. 4) CALL MENUUP
 #endif
       ENDIF
@@ -467,7 +466,9 @@ C Update status information for GUI.
 C
       ISTAT = KRDLIN ( NCRU , CRDLWC , IFIN )
 
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_)|| defined(_INW_)
+c      WRITE(444,*)'IStat is ', ISTAT
+
+#ifdef CRY_GUI
       IF ( NCRU .EQ. 5 ) THEN
       WRITE(CMON,'(A)') '^^CO SAFESET [ XPRMPT TEXT "" ]'
       CALL XPRVDU(NCVDU,1,0)
@@ -494,6 +495,7 @@ C
 1420  CONTINUE
 
 C&GIL      WRITE(6,*) NCRU, ':', CRDLWC
+c      WRITE(555,*) NCRU, ':', CRDLWC
 
 C If the current read unit is a script, then call KSCPRC.
       IF ( IRDSCR(IFLIND) .GT. 0 ) THEN
@@ -689,13 +691,6 @@ C
       CHARACTER*(*) CLINE
       CHARACTER *1 CDOLAR
       CHARACTER *2 CTRAN1 , CTRAN2, CTRAN3
-#if defined(_PPC_) 
-CS***
-      CHARACTER*80 theLine
-CE***
-C
-C
-#endif
       INCLUDE 'XUNITS.INC'
       INCLUDE 'XSSVAL.INC'
       INCLUDE 'XGUIOV.INC'
@@ -720,72 +715,29 @@ C----- INITIALISE BUFFER
 
 c      WRITE(NCWU,'(A,I5)') 'NWCARD is now:', NWCARD
 
+c      WRITE(444,*)'Reading from ', IUNIT
+
 
 C
-#if defined(_PPC_) 
-CS*** For any event driven system we have to hook in to respond to
-C**** some events (menu, high-level or keypress). The called routine
-C**** will give us back the next command in a variable theLine,
-C**** which is copied then.
-C**** 12.11.1995 Ludwig Macko
-C****
-      IF ( IUNIT .EQ. 5 ) THEN
-        CALL resetcursor
-        CALL SETSTA( 'Crystals' )
-        CALL nextlineofcommand( IOS, %LOC(theLine) )
-        CLINE = theLine
-      ELSE
-CE***
-C&PPCCE***
-
-#endif
       IF (IUNIT .EQ. NCUFU(1)) THEN
 C If in script mode, set flag.
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
-        INSTRC = .FALSE.
-        IF ( IRDSCR(IFLIND) .GT. 0 ) THEN
-          INSTRC = .TRUE.
+#ifdef CRY_GUI
+          INSTRC = .FALSE.
+          IF ( IRDSCR(IFLIND) .GT. 0 ) THEN
+              INSTRC = .TRUE.
+          END IF
+          CALL MENUUP
 #endif
-#if defined(_WXS_) || defined(_INW_)
-        INSTRC = .FALSE.
-        IF ( IRDSCR(IFLIND) .GT. 0 ) THEN
-          INSTRC = .TRUE.
-c&&GILGID          WRITE (CMON,1515) '''SCRIPTS - Awaiting User Action'''
-c&&GILGID          CALL XPRVDU (NCVDU,1,0)
 
-#endif
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
-        END IF
-#endif
-#if defined(_WXS_) || defined(_INW_)
-        END IF
-
-#endif
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
-C Update status information for UI.
-            CALL MENUUP
-#endif
-#if defined(_WXS_) || defined(_INW_)
-            CALL MENUUP
-#endif
-            CALL GETCOM(CLINE)
+          CALL GETCOM(CLINE)
 
 C If in script mode, set progress text.
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
-        IF ( INSTRC ) THEN
-          WRITE (CMON,1515) '''Crystals Script Mode'''
-          CALL XPRVDU (NCVDU,1,0)
-1515      FORMAT ('^^CO SET PROGOUTPUT TEXT = ',A)
-        END IF
-
-#endif
-#if defined(_WXS_) || defined(_INW_)
-        IF ( INSTRC ) THEN
-          WRITE (CMON,1515) '''Crystals Script Mode'''
-          CALL XPRVDU (NCVDU,1,0)
-1515      FORMAT ('^^CO SET PROGOUTPUT TEXT = ',A)
-        END IF
-
+#ifdef CRY_GUI
+          IF ( INSTRC ) THEN
+              WRITE (CMON,1515) '''Crystals Script Mode'''
+              CALL XPRVDU (NCVDU,1,0)
+1515          FORMAT ('^^CO SET PROGOUTPUT TEXT = ',A)
+          END IF
 #endif
       ELSE
       READ ( IUNIT, 1015, ERR = 9910, END = 9920 , IOSTAT = IOS ) CLINE
@@ -793,12 +745,7 @@ C If in script mode, set progress text.
 
 1015  FORMAT ( A )
 1002  CONTINUE
-#if defined(_PPC_) 
-CS***
-      ENDIF
-CE***
-C
-#endif
+
       LENUSE = 0
       DO 1100 I = 1 , LEN ( CLINE )
         IF ( CLINE(I:I) .NE. ' ' ) LENUSE = I
@@ -2789,19 +2736,7 @@ cdjwsep2011
       ENDIF
 CRICFEB01[
 2346    FORMAT ( '^^CO SAFESET [ ', A , ' TEXT ''', A , ''' ]' )
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
-      IF ( IDEV .EQ. NCPU ) THEN
-        WRITE ( CMON,2346) '_MT_PCH', NEWFIL(1:LENNAM)
-        CALL XPRVDU ( NCVDU, 1, 0 )
-      ELSE IF ( IDEV .EQ. NCWU ) THEN
-        WRITE ( CMON,2346) '_MT_LIS', NEWFIL(1:LENNAM)
-        CALL XPRVDU ( NCVDU, 1, 0 )
-      ELSE IF ( IDEV .EQ. NCLU ) THEN
-        WRITE ( CMON,2346) '_MT_LOG', NEWFIL(1:LENNAM)
-        CALL XPRVDU ( NCVDU, 1, 0 )
-      ENDIF
-#endif
-#if defined(_WXS_) || defined(_INW_)
+#ifdef CRY_GUI
       IF ( IDEV .EQ. NCPU ) THEN
         WRITE ( CMON,2346) '_MT_PCH', NEWFIL(1:LENNAM)
         CALL XPRVDU ( NCVDU, 1, 0 )

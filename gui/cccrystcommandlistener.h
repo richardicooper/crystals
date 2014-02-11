@@ -6,7 +6,11 @@
  *
  */
 
-//   $Log: not supported by cvs2svn $
+//   $Log: cccrystcommandlistener.h,v $
+//   Revision 1.2  2005/02/07 14:23:13  stefan
+//   1. Added a missing ;
+//   2. Added some preprocessor for the wx version
+//
 //   Revision 1.1  2005/02/04 17:21:40  stefan
 //   1. A set of classes to extent CcSafeDeque to allow easy change notification.
 //   2. A set of classese to more generalise CcSafeDeques uses.
@@ -17,25 +21,26 @@
 
 #include "cclistenerperformer.h"
 #include "cclistenablesafedeque.h"
-#if defined(__BOTHWX__)
+
+#ifndef CRY_USEMFC
 #include <wx/event.h>
 #endif
 
 class CcCrystalsCommandListener : public AddListener
 {
 	private:
-		#if defined(__BOTHWX__)
-		wxEvtHandler* iEventHandler;
-		WXTYPE iEvent;
-		#else
+		#ifdef CRY_USEMFC
 		CWinThread* iMessageHandler;
 		UINT iMessage;
+		#else
+		wxEvtHandler* iEventHandler;
+		WXTYPE iEvent;
 		#endif
 	public:
-		#if defined(__BOTHWX__)
-		CcCrystalsCommandListener(wxEvtHandler * pEventHandler, const wxEventType pEvent);
-		#else
+		#ifdef CRY_USEMFC
 		CcCrystalsCommandListener::CcCrystalsCommandListener(CWinThread* pMessageHandler, const UINT pMessage);
+		#else
+		CcCrystalsCommandListener(wxEvtHandler * pEventHandler, const wxEventType pEvent);
 		#endif
 		CcCrystalsCommandListener(const CcCrystalsCommandListener& pListener);
 		virtual CcListener* clone() const;

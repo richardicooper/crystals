@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: torsion.F,v $
+C Revision 1.12  2012/09/17 12:24:53  rich
+C DPROD subroutine name clashes with intrinsic function. Renamed DVPROD.
+C
 C Revision 1.11  2011/09/30 07:07:31  djw
 C Remove diagnostic print
 C

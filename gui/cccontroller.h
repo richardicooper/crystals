@@ -11,23 +11,17 @@
 #ifndef     __CcController_H__
 #define     __CcController_H__
 
-#ifdef __CR_WIN__
- #include <afxwin.h>
-#endif
 
 #include <algorithm>
 #include <vector>
 #include <deque>
 #include <list>
-
-#ifdef __BOTHWIN__
- #include <windows.h>
-#endif
-
 #include    <cstdio> //For FILE definition
 
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+#else
  #include <wx/app.h>
  #include <wx/thread.h>
  #include <wx/event.h>
@@ -39,20 +33,15 @@
 #include    "ccstatus.h"
 #include    "ccrect.h"
 #include    "crystals.h"
-
 #include    <cstdio> //For FILE definition
 
-#ifdef __CR_WIN__
- #include <afxwin.h>
-#endif
 
-
-#ifdef __BOTHWIN__
+#ifdef CRY_OSWIN32
  #include <windows.h>
 #endif
 
  
-#ifdef __BOTHWX__
+#ifndef CRY_USEMFC   //  if using wxWidgets
 //DECLARE_EVENT_TYPE(ccEVT_COMMAND_ADDED, 1238) //Made up number 
 extern const wxEventType ccEVT_COMMAND_ADDED;
 #endif
@@ -154,13 +143,12 @@ class   CcController
     CrWindow *      mCurrentWindow;
     int m_ExitCode;
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     static CWinThread *mCrystalsThread;
     static CWinThread *mGUIThread;
     static CFont* mp_font;
     static CFont* mp_inputfont;
-#endif
-#ifdef __BOTHWX__
+#else
     static CcThread *mCrystalsThread;
     static wxFont* mp_inputfont;
 #endif
@@ -216,7 +204,7 @@ extern "C" {
   void  FORCALL(datain)         ( int id, int *data, int offset, int nwords );
   void  FORCALL(callccode)      (  char *theLine                     );
   void  FORCALL(guexec)         (  char *theLine                     );
-#ifdef __BOTHWIN__
+#ifdef CRY_OSWIN32
   bool  IsWinNT();
 #endif
 
@@ -225,16 +213,16 @@ extern "C" {
 }
 
 
-#ifdef __BOTHWIN__
+#ifdef CRY_OSWIN32
 class CcProcessInfo
 {
    public:
-      CcProcessInfo(const tstring & app, STARTUPINFO & si, tstring & commandline ) {
+      CcProcessInfo(const tstring & app, STARTUPINFOA & si, tstring & commandline ) {
 
 //        CreateOK = CreateProcess(app.c_str(), const_cast<char*>(commandline.c_str()), NULL,NULL,
 //                                 TRUE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&proc);
          commandline.resize( _MAX_PATH );
-         CreateOK = CreateProcess(NULL, &commandline[0], NULL,NULL,
+         CreateOK = CreateProcessA(NULL, &commandline[0], NULL,NULL,
                                  TRUE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&proc);
 
          commandline.erase(
@@ -335,7 +323,12 @@ enum
 #endif
 
 
-//   $Log: not supported by cvs2svn $
+//   $Log: cccontroller.h,v $
+//   Revision 1.54  2012/09/12 13:29:33  rich
+//   Better SYSOPENFILE syntax:
+//   SYSOPENFILE [ 'wildcard' 'description' 'wildcard2' 'description' ]
+//   Add as many wildcard-description pairs to the list as required.
+//
 //   Revision 1.53  2012/05/14 15:27:52  rich
 //   Sort out use of unicode and non-unicode functions.
 //

@@ -1,5 +1,8 @@
 # Startup file for DEFINE
-#  $Log: not supported by cvs2svn $
+#  $Log: crysdef.srt,v $
+#  Revision 1.1.1.1  2004/12/13 11:16:15  rich
+#  New CRYSTALS repository
+#
 #  Revision 1.10  2003/09/29 15:38:34  rich
 #  Added \DEFINE system instruction for building the command file. No
 #  need for separate executable anymore. This command is \REMOVEd in

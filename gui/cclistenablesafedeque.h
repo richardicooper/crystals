@@ -6,7 +6,10 @@
  *
  */
  
- //   $Log: not supported by cvs2svn $
+ //   $Log: cclistenablesafedeque.h,v $
+ //   Revision 1.3  2012/03/26 11:34:00  rich
+ //   Removed some unnecessary templating.
+ //
  //   Revision 1.2  2011/05/04 12:21:17  rich
  //   Remove throw statements - they are ignored by C++ compiler.
  //

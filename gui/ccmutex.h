@@ -6,7 +6,10 @@
  *
  */
  
- // $Log: not supported by cvs2svn $
+ // $Log: ccmutex.h,v $
+ // Revision 1.3  2011/05/04 12:21:17  rich
+ // Remove throw statements - they are ignored by C++ compiler.
+ //
  // Revision 1.2  2005/02/22 22:49:24  stefan
  // 1. Added new line at the end of the file as some compiles aren't to happy not having an empty line
  //
@@ -16,7 +19,7 @@
 #if !defined(CcMutex_H__)
 #define CcMutex_H__
 
-#ifdef __BOTHWX__
+#ifndef CRY_USEMFC
 #include <wx/thread.h>
 #endif
 
@@ -27,7 +30,7 @@ using namespace std;
 class CcMutex
 {
 	private:
-		#if defined(__CR_WIN__)
+		#if defined(CRY_USEMFC)
 		HANDLE iMutex;
 		#else
 		wxMutex iMutex;

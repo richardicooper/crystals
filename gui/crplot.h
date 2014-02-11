@@ -61,7 +61,7 @@
 using namespace std;
 
 
-#ifdef __BOTHWX__
+#ifndef CRY_USEMFC
 // These macros are being defined somewhere. They shouldn't be.
 
 #ifdef GetCharWidth

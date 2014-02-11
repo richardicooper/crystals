@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: distangl.F,v $
+C Revision 1.111  2013/07/03 09:28:22  rich
+C Write H atoms on O and N to script output file.
+C
 C Revision 1.110  2013/05/09 11:24:37  rich
 C Fix bounds overrun in distangl when called from Fourier routines (shorter stack).
 C
@@ -7042,7 +7045,7 @@ C -- Add this extra element in L29 style at NEWL29.
             STORE(NEWM29+2) = STORE(L40T+2)
 
 C -- Have to get proper covalent radii from file if possible.
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_MAC_)
+#ifdef CRY_OSWIN32
             CFILEN = 'CRYSDIR:script\propwin.dat'
 #else
             CFILEN = 'CRYSDIR:script/propwin.dat'

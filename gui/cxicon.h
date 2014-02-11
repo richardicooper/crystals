@@ -7,7 +7,10 @@
 //   Filename:  CxIcon.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxicon.h,v $
+//   Revision 1.7  2011/04/21 11:21:28  rich
+//   Various WXS improvements.
+//
 //   Revision 1.6  2005/01/23 10:20:24  rich
 //   Reinstate CVS log history for C++ files and header files. Recent changes
 //   are lost from the log, but not from the files!
@@ -29,16 +32,15 @@
 #define           __CxIcon_H__
 #include    "crguielement.h"
 
-#ifdef __BOTHWX__
-#include <wx/stattext.h>
-#include <wx/icon.h>
-#define BASETEXT wxStaticText
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASETEXT CStatic
+#else
+ #include <wx/stattext.h>
+ #include <wx/icon.h>
+ #define BASETEXT wxStaticText
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASETEXT CStatic
-#endif
 
 class CrIcon;
 class CxGrid;

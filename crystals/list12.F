@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: list12.F,v $
+C Revision 1.25  2013/05/15 13:31:57  pascal
+C Fixed print 22 information in case of error. bfile filename still not handled
+C
 C Revision 1.24  2013/05/07 16:26:25  pascal
 C Added user indication for print 22 output
 C

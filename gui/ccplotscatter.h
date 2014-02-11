@@ -7,7 +7,11 @@
 //   Filename:  CcPlotScatter.cc
 //   Authors:   Richard Cooper and Steve Humphreys
 //   Created:   10.11.2001 10:15
-//   $Log: not supported by cvs2svn $
+//   $Log: ccplotscatter.h,v $
+//   Revision 1.15  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.2  2005/01/14 12:10:58  rich
 //   Fixed reflection indices for omitted reflections in Fo vs Fc graph.
 //

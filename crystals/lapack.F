@@ -2,7 +2,7 @@
 C The functions in this file are only required on Digital compiler builds
 C other platforms use external libraries (MKL or OpenBLAS).
 
-#if defined(_GID_) || defined(_WXS_)  
+#if defined(_GID_) || defined(_WXS_)  || defined(_MIN_)
 
 C This file must be compiled without optimisations...
 

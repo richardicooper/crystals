@@ -7,7 +7,11 @@
 //   Filename:  CxMenu.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   09.6.1998 00:03 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxmenu.h,v $
+//   Revision 1.10  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:18  rich
 //   New CRYSTALS repository
 //
@@ -43,15 +47,14 @@
 #include    <LCaption.h>
 #endif
 
-#ifdef __BOTHWX__
-#include <wx/menu.h>
-#define BASEMENU wxMenu
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASEMENU CMenu
+#else
+ #include <wx/menu.h>
+ #define BASEMENU wxMenu
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASEMENU CMenu
-#endif
 
 class CrMenu;
 class CxMenu;

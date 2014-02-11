@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: lexical.F,v $
+C Revision 1.36  2012/03/23 13:52:07  rich
+C Inter compiler support.
+C
 C Revision 1.35  2012/01/04 14:31:25  rich
 C Fix some uninitialized variables, and output format mistakes.
 C
@@ -506,7 +509,7 @@ C----- LOOK FOR BLANK AFTER 'ALL'
               CALL XFILL (IB, IMAGE(J), 80-J+1)
               CALL XMOVEI ( IMAGE, LCMAGE, 80)
               NMOUSE = 0
-#if !defined(_DVF_) && !defined(_GID_) && !defined(_LIN_) && !defined(_WXS_) && !defined(_INW_)
+#if defined(_DOS_)
              CALL XRDMSE (CMOUSE, NMOUSE)
 #endif
               IMOUSE = 1

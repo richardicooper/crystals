@@ -3,8 +3,15 @@ set(wxWidgets_CONFIG_EXECUTABLE /Users/richard.cooper/wxWidgets-2.9.5/b2/wx-conf
 		    
 
 add_definitions(-D_GNUF77_)
+
+if(APPLE)
 add_definitions(-D__WXMAC__)
 add_definitions(-D__WXOSX__)
+else()
+add_definitions(-D__MIN__)
+add_definitions(-D_UNICODE)
+endif()
+
 #add_definitions(-D__WXOSX_COCOA__)
 #add_definitions(-D__WXUSINGDLL)
 add_definitions(-D_FILE_OFFSET_BITS=64)
@@ -36,7 +43,7 @@ INCLUDE(${wxWidgets_USE_FILE})
 # lwx_osx_cocoau_html-2.9 -lwx_osx_cocoau_qa-2.9 -lwx_osx_cocoau_adv-2.9 
 # -lwx_osx_cocoau_core-2.9 -lwx_baseu_xml-2.9 -lwx_baseu_net-2.9 -lwx_baseu-2.9 
 
-add_library(CrystalsUserInterface STATIC 
+add_library(CrystalsUserInterface OBJECT 
 ccchartcolour.cc 
 ccchartdoc.cc 
 ccchartellipse.cc 

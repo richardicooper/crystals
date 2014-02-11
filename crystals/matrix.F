@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: matrix.F,v $
+C Revision 1.30  2013/11/06 12:48:23  pascal
+C put back SSYRK subroutine needed as a dependency
+C
 C Revision 1.29  2013/11/06 12:19:09  pascal
 C replaced SSYRK with DSYRK subroutine for build not using optimized blas
 C
@@ -225,7 +228,7 @@ C      CONVERT TO COLUMN-WISE
        CALL XTRANS(ROW,B,3,3)
       ENDIF
       WRITE(CMON,'(9F8.3)') ROW
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_)|| defined(_INW_)
+#ifdef CRY_GUI
       CALL ZMORE(CMON,0)
 #endif
       GOTO 1100
@@ -261,7 +264,7 @@ C      CONVERT TO COLUMN-WISE
        CALL XTRANS(ROW,B,3,3)
       ENDIF
       WRITE(CMON,'(9F8.3)') ROW
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_)|| defined(_INW_)
+#ifdef CRY_GUI
       CALL ZMORE(CMON,0)
 #endif
       GOTO 1100
@@ -312,13 +315,13 @@ C-----INV
       CALL MTRANS(ACC)
       ISTAT = KSCTRN ( 1 , 'MATRIX:DET' ,D, 1 )
       WRITE(CMON,'(A, F12.5)') 'Determinant = ', D
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_)|| defined(_INW_)
+#ifdef CRY_GUI
       CALL ZMORE(CMON,0)
 #endif
       GOTO 101
 C-----EIG     
 9     CONTINUE
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_)|| defined(_INW_)
+#ifdef CRY_GUI
       call zmore('Not yet implemented',0)
 #endif
       GOTO 101
@@ -357,7 +360,7 @@ C-----SCR2B
 C
 101    CONTINUE
       WRITE(CMON,'(9F8.3)') ACC
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_)|| defined(_INW_)
+#ifdef CRY_GUI
       CALL ZMORE(CMON,0)
 C Keep script up-to-date with what's going on, if it cares.
 #endif
@@ -2474,7 +2477,7 @@ C The following level 2 BLAS routines are only required on digital build. All ot
 C use optimsed, external libraries. (MKL or OpenBLAS)
 
 
-#if defined (_GID_) || defined(_WXS_)  
+#if defined (_GID_) || defined(_WXS_)  || defined (_MIN_)
 
 
 C     File of the REAL              Level 2 BLAS routines:  

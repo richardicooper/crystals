@@ -6,7 +6,10 @@
  *
  */
  
- //   $Log: not supported by cvs2svn $
+ //   $Log: cclistenerperformer.cc,v $
+ //   Revision 1.2  2005/02/22 22:47:24  stefan
+ //   1. Corrected a badly capatilised include
+ //
  //   Revision 1.1  2005/02/04 17:21:40  stefan
  //   1. A set of classes to extent CcSafeDeque to allow easy change notification.
  //   2. A set of classese to more generalise CcSafeDeques uses.

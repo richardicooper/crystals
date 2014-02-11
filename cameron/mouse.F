@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: mouse.F,v $
+C Revision 1.16  2012/03/23 14:05:55  rich
+C Intel compiler platform (INW) support.
+C
 C Revision 1.15  2006/11/10 08:26:35  djw
 C Improve fit between screen and Postscript labels
 C

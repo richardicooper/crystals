@@ -7,7 +7,11 @@
 //   Filename:  CxText.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxtext.h,v $
+//   Revision 1.10  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:18  rich
 //   New CRYSTALS repository
 //
@@ -27,15 +31,14 @@
 #define     __CxText_H__
 #include    "crguielement.h"
 
-#ifdef __BOTHWX__
-#include <wx/stattext.h>
-#define BASETEXT wxStaticText
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASETEXT CStatic
+#else
+ #include <wx/stattext.h>
+ #define BASETEXT wxStaticText
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASETEXT CStatic
-#endif
 
 class CrText;
 class CxGrid;

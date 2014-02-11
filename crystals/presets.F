@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: presets.F,v $
+C Revision 1.66  2012/03/23 13:54:08  rich
+C Changed some common block variables into constants.
+C
 C Revision 1.65  2011/11/03 09:20:35  rich
 C Initialise buffer for linearized error function.
 C
@@ -379,35 +382,14 @@ C
 C
       DATA ISIZST / 16777216 /, ISIZ11 / 16777216 /
 C
-#if defined(_PPC_) 
-C      SET INTERACTIVE UNDER MAC OS
-      DATA IQUN /2/, JQUN/2/
-#endif
-#if defined(_H_P_) 
+#if defined(_H_P_) || defined (_VAX_)
 C      INITIALISE THE ENVIRONMENT TO BATCH
       DATA IQUN /2/, JQUN/0/
-#endif
-#if defined(_DOS_) 
-C      SET INTERACTIVE UNDER DOS
+#else
+C      SET INTERACTIVE UNDER ALL MODERN OSes
       DATA IQUN /2/, JQUN/2/
 #endif
-#if defined(_DVF_) || defined(_GID_) 
-C      SET INTERACTIVE UNDER WINDOWS
-      DATA IQUN /2/, JQUN/2/
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-C      SET INTERACTIVE UNDER LINUX
-      DATA IQUN /2/, JQUN/2/
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA IQUN /2/, JQUN/2/
-#endif
-#if defined(_VAX_) 
-C      INITIALISE THE ENVIRONMENT TO BATCH
-      DATA IQUN /2/, JQUN/0/
-C
 C      INITIALISE THE TAPE USE STACK
-#endif
       DATA NMTR /0/
 C      INITIALISE THE DISK INDEX
       DATA INDEXF/424*0/, LIST/424*0/
@@ -501,59 +483,20 @@ C      THE COMMAND FILE SOURCE
       DATA NUCOM /4/
 C      THE OUTPUT DEVICES
 C       VDU, MONITOR, PRINTER, PUNCH, LOG, ERROR
-#if defined(_PPC_) 
-C      PRINTER ASSIGNED IN JOB CONTROL LANGUAGE
-      DATA NCVDU/6/, NCAWU/3/, NCWU/9/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
 #if defined(_H_P_) 
 C      REASSIGN PRINTER IN STARTUP FILE
       DATA NCVDU/6/, NCAWU/6/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
-#if defined(_DOS_) 
-C      REASSIGN PRINTER IN STARTUP FILE
-      DATA NCVDU/6/, NCAWU/3/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
-#if defined(_DVF_) || defined(_GID_) 
-C      REASSIGN PRINTER IN STARTUP FILE
-#endif
-#if defined(_GID_) 
-      DATA NCVDU/6/, NCAWU/3/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
-#if defined(_DVF_) 
-      DATA NCVDU/6/, NCAWU/3/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
-#if defined(_GIL_)  || defined(_MAC_)
-      DATA NCVDU/6/, NCAWU/3/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA NCVDU/6/, NCAWU/3/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
-#if defined(_LIN_) 
-      DATA NCVDU/6/, NCAWU/3/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
-#endif
-#if defined(_VAX_) 
+#elif defined (_VAX_)
 C      PRINTER ASSIGNED IN JOB CONTROL LANGUAGE
       DATA NCVDU/6/, NCAWU/3/, NCWU/9/, NCPU/7/, NCLU/8/, NCEROR/6/
+#else
+C      REASSIGN PRINTER IN STARTUP FILE
+      DATA NCVDU/6/, NCAWU/3/, NCWU/6/, NCPU/7/, NCLU/8/, NCEROR/6/
 #endif
-#if defined(_DOS_) 
+
       DATA NCADU/40/, NCMU/41/, NCCHW/42/, NCPDU/43/, NCDBU/44/
-#endif
-#if defined(_DVF_) || defined(_GID_) 
-      DATA NCADU/40/, NCMU/41/, NCCHW/42/, NCPDU/43/, NCDBU/44/
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      DATA NCADU/40/, NCMU/41/, NCCHW/42/, NCPDU/43/, NCDBU/44/
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA NCADU/40/, NCMU/41/, NCCHW/42/, NCPDU/43/, NCDBU/44/
-#endif
-#if defined(_VAX_) 
-      DATA NCADU/40/, NCMU/41/, NCCHW/42/, NCPDU/43/, NCDBU/44/
-#endif
-#if defined(_PPC_) 
-      DATA NCADU/40/, NCMU/41/, NCCHW/42/, NCPDU/43/, NCDBU/44/
+	  
 C      THE AUXILLIARY INPUT DEVICE (REFLECTIONS)
-#endif
       DATA NCARU /2/
 C      THE SYSTEM SPY FILE
       DATA NCSU /11/
@@ -623,34 +566,12 @@ C
       DATA NFLUSD / 50 /
 C
       DATA IFLUNI(1)  /  1 / , IFLUNI(2)  /  2 / , IFLUNI(3)  /  5 /
-#if defined(_PPC_) 
-      DATA IFLUNI(4)  /  9 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
-#if defined(_H_P_) 
-      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
-#if defined(_DOS_) 
-      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
-#if defined(_GID_) 
-      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
-#if defined(_DVF_) 
-      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
-#if defined(_LIN_) 
-      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
-#if defined(_GIL_)  || defined(_MAC_)
-      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-#endif
 #if defined(_VAX_) 
       DATA IFLUNI(4)  /  9 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
-C----- CHANGE IFLUNI(7) TO 3 LATER
+#else
+      DATA IFLUNI(4)  /  6 / , IFLUNI(5)  /  7 / , IFLUNI(6)  /  8 /
 #endif
+C----- CHANGE IFLUNI(7) TO 3 LATER
       DATA IFLUNI(7)  /  6 / , IFLUNI(8)  / 11 / , IFLUNI(9)  / 12 /
       DATA IFLUNI(10) / 14 / , IFLUNI(11) / 15 / , IFLUNI(12) / 20 /
       DATA IFLUNI(13) / 21 / , IFLUNI(14) / 22 / , IFLUNI(15) / 23 /
@@ -1628,58 +1549,82 @@ C      ISSCSH      cASHING MESSAGES (OFF/ON)
 C
 C (THE FOLLOWING 4 DEFINITIONS ARE REDUNDANT, AND ARE REPLACED BY
 C  THE CHARACTER DEFINITIONS 'CSS***)
-#if defined(_PPC_) 
-      DATA ISSMAC(1) / ' Pwr' / , ISSMAC(2) / ' Mac' /
-      DATA ISSOPS(1) / ' Mac' / , ISSOPS(2) / ' OS ' /
-      DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Oct' /
-      DATA ISSDAT(3) / '  19' / , ISSDAT(4) / '95  ' /
-#endif
 #if defined(_H_P_) 
       DATA ISSMAC(1) / ' H-P' / , ISSMAC(2) / '    ' /
       DATA ISSOPS(1) / 'UNIX' / , ISSOPS(2) / ' X.X' /
       DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Feb' /
       DATA ISSDAT(3) / '  20' / , ISSDAT(4) / '00  ' /
-#endif
-#if defined(_DOS_) 
+#elif defined(_DOS_) 
       DATA ISSMAC(1) / ' 486' / , ISSMAC(2) / '  PC' /
       DATA ISSOPS(1) / ' DOS' / , ISSOPS(2) / '6.22' /
       DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Feb' /
       DATA ISSDAT(3) / '  19' / , ISSDAT(4) / '97  ' /
  
-#endif
-#if defined(_DVF_) || defined(_GID_) 
+#elif defined(_DVF_) || defined(_GID_) 
       DATA ISSMAC(1) / 'Pent' / , ISSMAC(2) / 'ium ' /
-      DATA ISSOPS(1) / ' WIN' / , ISSOPS(2) / '95  ' /
+      DATA ISSOPS(1) / ' WIN' / , ISSOPS(2) / '32  ' /
       DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Dec' /
-      DATA ISSDAT(3) / '  20' / , ISSDAT(4) / '00  ' /
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
+      DATA ISSDAT(3) / '  20' / , ISSDAT(4) / '13  ' /
+#elif defined(_GIL_) || defined(_LIN_)
 #if defined (_HOL_)
-      DATA ISSMAC(1) / 4HPent / , ISSMAC(2) / 4Hium  /
+      DATA ISSMAC(1) / 4HInte / , ISSMAC(2) / 4Hl    /
       DATA ISSOPS(1) / 4HLinu / , ISSOPS(2) / 4Hx    /
-      DATA ISSDAT(1) / 4H     / , ISSDAT(2) / 4H Jun /
-      DATA ISSDAT(3) / 4H  20 / , ISSDAT(4) / 4H00   /
+      DATA ISSDAT(1) / 4H     / , ISSDAT(2) / 4H Dec /
+      DATA ISSDAT(3) / 4H  20 / , ISSDAT(4) / 4H13   /
 #else
-      DATA ISSMAC(1) / 'Pent' / , ISSMAC(2) / 'ium ' /
+      DATA ISSMAC(1) / 'Inte' / , ISSMAC(2) / 'l ' /
       DATA ISSOPS(1) / 'Linu' / , ISSOPS(2) / 'x   ' /
       DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Jun' /
       DATA ISSDAT(3) / '  20' / , ISSDAT(4) / '00  ' /
 #endif
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA ISSMAC(1) / 'Pent' / , ISSMAC(2) / 'ium ' /
-      DATA ISSOPS(1) / 'Linu' / , ISSOPS(2) / 'x   ' /
+#elif defined(_MAC_)
+#if defined (_HOL_)
+      DATA ISSMAC(1) / 4HInte / , ISSMAC(2) / 4Hl    /
+      DATA ISSOPS(1) / 4HMacO / , ISSOPS(2) / 4HS    /
+      DATA ISSDAT(1) / 4H     / , ISSDAT(2) / 4H Dec /
+      DATA ISSDAT(3) / 4H  20 / , ISSDAT(4) / 4H13   /
+#else
+      DATA ISSMAC(1) / 'Inte' / , ISSMAC(2) / 'l ' /
+      DATA ISSOPS(1) / 'MacO' / , ISSOPS(2) / 's   ' /
       DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Jun' /
       DATA ISSDAT(3) / '  20' / , ISSDAT(4) / '00  ' /
 #endif
-#if defined(_VAX_) 
+#elif defined(_WXS_)  || defined (_INW_)
+      DATA ISSMAC(1) / 'Inte' / , ISSMAC(2) / 'l   ' /
+      DATA ISSOPS(1) / 'Win3' / , ISSOPS(2) / '2   ' /
+      DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Dec' /
+      DATA ISSDAT(3) / '  20' / , ISSDAT(4) / '13  ' /
+#elif defined(_VAX_) 
       DATA ISSMAC(1) / ' DEC' / , ISSMAC(2) / ' VAX' /
       DATA ISSOPS(1) / ' VMS' / , ISSOPS(2) / ' 5.0' /
       DATA ISSDAT(1) / '    ' / , ISSDAT(2) / ' Feb' /
       DATA ISSDAT(3) / '  19' / , ISSDAT(4) / '90  ' /
-C
-C
+#elif defined(_MIN_)
+#if defined (_HOL_)
+      DATA ISSMAC(1) / 4HMinG / , ISSMAC(2) / 4HW    /
+      DATA ISSOPS(1) / 4HWin3 / , ISSOPS(2) / 4H3    /
+      DATA ISSDAT(1) / 4H     / , ISSDAT(2) / 4H     /
+      DATA ISSDAT(3) / 4H  20 / , ISSDAT(4) / 4H14   /
+#else
+      DATA ISSMAC(1) / 'MinG' / , ISSMAC(2) / 'W ' /
+      DATA ISSOPS(1) / 'Win3' / , ISSOPS(2) / '3 ' /
+      DATA ISSDAT(1) / '    ' / , ISSDAT(2) / '    ' /
+      DATA ISSDAT(3) / '  20' / , ISSDAT(4) / '14  ' /
 #endif
+#else
+#if defined (_HOL_)
+      DATA ISSMAC(1) / 4HUnkn / , ISSMAC(2) / 4Hown  /
+      DATA ISSOPS(1) / 4HUnkn / , ISSOPS(2) / 4Hown  /
+      DATA ISSDAT(1) / 4H     / , ISSDAT(2) / 4H     /
+      DATA ISSDAT(3) / 4H  19 / , ISSDAT(4) / 4H63   /
+#else
+      DATA ISSMAC(1) / 'Unkn' / , ISSMAC(2) / 'own ' /
+      DATA ISSOPS(1) / 'Unkn' / , ISSOPS(2) / 'own ' /
+      DATA ISSDAT(1) / '    ' / , ISSDAT(2) / '    ' /
+      DATA ISSDAT(3) / '  19' / , ISSDAT(4) / '63  ' /
+#endif
+#endif
+
       DATA ISSISS     / 14 / ,     ISSVER     / 1400 /
       DATA ISSSEG / -1 /
 C
@@ -1690,26 +1635,16 @@ C RICJUL00
       DATA ISSSEQ / 1 / , ISSDAF / 2 /
 C
       DATA ISSREA / 1 /, ISSWRI / 2 /, ISSAPP /3/
-#if defined(_PPC_) 
-      DATA ISSFNF /  29 /
-#endif
 #if defined(_H_P_) 
       DATA ISSFNF / 940 /
-#endif
-#if defined(_DOS_) 
+#elif defined(_DOS_) 
       DATA ISSFNF / 128 /
-#endif
-#if defined(_DVF_) || defined(_GID_) 
+#elif defined(CRY_NONGNU) || defined(_VAX_) 
       DATA ISSFNF /  29 /
-#endif
-#if defined(_VAX_) 
-      DATA ISSFNF /  29 /
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
+#elif defined(CRY_GNU)
       DATA ISSFNF /  2 /
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA ISSFNF /  29 /
+#else
+      DATA ISSFNF /  2 /
 #endif
       DATA ISSOKF / 0 /
       DATA ISSEOF /-1 /
@@ -1733,7 +1668,7 @@ C      ON THE VAX, THE RECORD LENGTH IS GIVEN IN LONGWORDS, SO THAT
 C                  ISSDAR = ISSRLI
 C      ON THE HEWLET PACKARD, IT IS IN BYTES, SO THAT
 C                  ISSDAR = 4 * ISSRLI
-#if defined(_DIGITALF77_) || defined (_INW_) ||defined(_VAX_) ||defined(_GID_) 
+#if defined(CRY_NONGNU) 
       DATA ISSDAR / 512 /
 #else
       DATA ISSDAR / 2048 /
@@ -1779,14 +1714,6 @@ C C*64 CSSCIF      CIF OUTPUT FILE
 cRICjul99
 C C*64 CSSMAP      MAP OUTPUT FILE
 C
-#if defined(_PPC_) 
-      DATA CSSMAC / 'PowerMacintosh' /
-      DATA LSSMAC / 14 /
-      DATA CSSOPS / 'MacOS' /
-      DATA LSSOPS / 5 /
-      DATA CSSDAT / 'October 1995' /
-      DATA LSSDAT / 12 /
-#endif
 #if defined(_H_P_) 
       DATA CSSMAC / 'HP UNIX' /
       DATA LSSMAC / 7 /
@@ -1794,46 +1721,48 @@ C
       DATA LSSOPS / 11 /
       DATA CSSDAT / 'February  2000' /
       DATA LSSDAT / 14 /
-#endif
-#if defined(_DOS_) 
+#elif defined(_DOS_) 
       DATA CSSMAC / 'Intel 80X86' /
       DATA LSSMAC / 11 /
       DATA CSSOPS / 'DOS 7.0' /
       DATA LSSOPS / 7 /
       DATA CSSDAT / 'February  1996' /
       DATA LSSDAT / 14 /
-#endif
-#if defined(_DVF_) || defined(_GID_) 
-      DATA CSSMAC / 'Intel Pentium' /
-      DATA LSSMAC / 13 /
-      DATA CSSOPS / 'WIN XP' /
-      DATA LSSOPS / 6 /
-      DATA CSSDAT / 'June 2007' /
-      DATA LSSDAT / 9  /
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      DATA CSSMAC / 'Intel Pentium' /
-      DATA LSSMAC / 13 /
+#elif defined(CRY_OSWIN32)
+      DATA CSSMAC / 'Intel' /
+      DATA LSSMAC / 5 /
+      DATA CSSOPS / 'Win32' /
+      DATA LSSOPS / 5 /
+      DATA CSSDAT / 'Dec 2013' /
+      DATA LSSDAT / 8  /
+#elif defined(CRY_OSLINUX)
+      DATA CSSMAC / 'Intel' /
+      DATA LSSMAC / 5 /
       DATA CSSOPS / 'Linux' /
       DATA LSSOPS / 5 /
-      DATA CSSDAT / 'May 1999' /
+      DATA CSSDAT / 'Dec 2013' /
       DATA LSSDAT / 8 /
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA CSSMAC / 'Intel Pentium' /
-      DATA LSSMAC / 13 /
-      DATA CSSOPS / 'Linux' /
+#elif defined (CRY_OSMAC)
+      DATA CSSMAC / 'Intel' /
+      DATA LSSMAC / 5 /
+      DATA CSSOPS / 'MacOS' /
       DATA LSSOPS / 5 /
-      DATA CSSDAT / 'May 1999' /
+      DATA CSSDAT / 'Dec 2013' /
       DATA LSSDAT / 8 /
-#endif
-#if defined(_VAX_) 
+#elif defined(_VAX_) 
       DATA CSSMAC / 'DEC VAX' /
       DATA LSSMAC / 7 /
       DATA CSSOPS / 'VMS 5' /
       DATA LSSOPS / 5 /
       DATA CSSDAT / 'February  1990' /
       DATA LSSDAT / 14 /
+#else 
+      DATA CSSMAC / 'Unknown' /
+      DATA LSSMAC / 7 /
+      DATA CSSOPS / 'None' /
+      DATA LSSOPS / 4 /
+      DATA CSSDAT / 'Jan 1963' /
+      DATA LSSDAT / 8 /
 #endif
       DATA CSSPRG / 'CRYSTALS' /
       DATA LSSPRG / 8 /
@@ -1848,122 +1777,42 @@ C
       DATA CSSDST / 'CRYSDIR:crysdef.srt' /
       DATA LSSDST / 19 /
 C
-#if defined(_PPC_) 
-      DATA CSSSCT / 'CRSCP:scatt.dat' /
-      DATA LSSSCT / 15 /
-#endif
 #if defined(_H_P_) 
       DATA CSSSCT / '/users/oxford/scatt.dat' /
       DATA LSSSCT / 23 /
-#endif
-#if defined(_DOS_) 
-      DATA CSSSCT / ' ' /
-      DATA LSSSCT / 1 /
-#endif
-#if defined(_DVF_) || defined(_GID_) 
-      DATA CSSSCT / ' ' /
-      DATA LSSSCT / 1 /
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      DATA CSSSCT / ' ' /
-      DATA LSSSCT / 1 /
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA CSSSCT / ' ' /
-      DATA LSSSCT / 1 /
-#endif
-#if defined(_VAX_) 
-      DATA CSSSCT / 'CRSCP:scatt.dat' /
-      DATA LSSSCT / 15 /
-C
-#endif
-#if defined(_PPC_) 
-      DATA CSSELE / 'CRSCP:propwin.dat' /
-      DATA LSSELE / 17 /
-#endif
-#if defined(_H_P_) 
       DATA CSSELE / '/users/oxford/propwin.dat' /
       DATA LSSELE / 24 /
-#endif
-#if defined(_DOS_) 
-      DATA CSSELE / ' ' /
-      DATA LSSELE / 1 /
-#endif
-#if defined(_DVF_) || defined(_GID_) 
-      DATA CSSELE / ' ' /
-      DATA LSSELE / 1 /
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      DATA CSSELE / ' ' /
-      DATA LSSELE / 1 /
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA CSSELE / ' ' /
-      DATA LSSELE / 1 /
-#endif
-#if defined(_VAX_) 
+#elif defined(_VAX_) 
+      DATA CSSSCT / 'CRSCP:scatt.dat' /
+      DATA LSSSCT / 15 /
       DATA CSSELE / 'CRSCP:propwin.dat' /
       DATA LSSELE / 17 /
-C
-#endif
-#if defined(_PPC_) 
-      DATA CSSVDU  / 'SYS$COMMAND' /
-      DATA LSSVDU / 11 /
+#else
+      DATA CSSSCT / ' ' /
+      DATA LSSSCT / 1 /
+      DATA CSSELE / ' ' /
+      DATA LSSELE / 1 /
 #endif
 #if defined(_H_P_) 
       DATA CSSVDU  / 'VDU' /
       DATA LSSVDU / 3 /
-#endif
-#if defined(_DOS_) 
-      DATA CSSVDU  / 'CON' /
-      DATA LSSVDU / 3 /
-#endif
-#if defined(_DVF_) || defined(_GID_) 
-      DATA CSSVDU  / 'CON' /
-      DATA LSSVDU / 3 /
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      DATA CSSVDU  / 'CON' /
-      DATA LSSVDU / 3 /
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA CSSVDU  / 'CON' /
-      DATA LSSVDU / 3 /
-#endif
-#if defined(_VAX_) 
+#elif defined(_VAX_) 
       DATA CSSVDU  / 'SYS$COMMAND' /
       DATA LSSVDU / 11 /
+#else
+      DATA CSSVDU  / 'CON' /
+      DATA LSSVDU / 3 /
+#endif
 C
-#endif
-#if defined(_PPC_) 
-      DATA CSSLPT  / 'SYS$PRINT' /
-      DATA LSSLPT / 9 /
-#endif
 #if defined(_H_P_) 
       DATA CSSLPT  / 'LPT' /
       DATA LSSLPT / 3 /
-#endif
-#if defined(_DOS_) 
-      DATA CSSLPT  / 'PRN' /
-      DATA LSSLPT / 3 /
-#endif
-#if defined(_DVF_) || defined(_GID_) 
-      DATA CSSLPT  / 'PRN' /
-      DATA LSSLPT / 3 /
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      DATA CSSLPT  / 'PRN' /
-      DATA LSSLPT / 3 /
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      DATA CSSLPT  / 'PRN' /
-      DATA LSSLPT / 3 /
-#endif
-#if defined(_VAX_) 
+#elif defined(_VAX_) 
       DATA CSSLPT  / 'SYS$PRINT' /
       DATA LSSLPT / 9 /
-C
-cdjwmay99
+#else
+      DATA CSSLPT  / 'PRN' /
+      DATA LSSLPT / 3 /
 #endif
 
       DATA CSSCIF / 'publish.cif' /
@@ -1971,7 +1820,7 @@ cdjwmay99
 
       DATA CSSMAP / 'fourier.map' /
       DATA LSSMAP / 11 /
-C          q
+C          
 C -- 'DEVICE' AND 'EXTENSION' REQUIRED FOR 'HELP' , 'MANUAL' , AND
 C    'SCRIPT' INSTRUCTIONS
 C
@@ -2513,17 +2362,10 @@ C --- UFILE ---
 C --- XUNITS ---
       NCRU =20
       NCRRU =1
-#if defined(_DOS_) || defined(_DVF_) || defined(_GID_) 
-      NCWU=6
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      NCWU=6
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      NCWU=6
-#endif
 #if defined(_VAX_) 
       NCWU=9
+#else
+      NCWU=6
 #endif
       NCPU=7
       IPAGE(1)=10
@@ -2533,21 +2375,12 @@ C --- XUNITS ---
       IPAGE(5)=20
       NCARU=2
       NCAWU=3
-#if defined(_DOS_) || defined(_DVF_) || defined(_GID_) 
-      IQUN=2
-      JQUN=2
-#endif
-#if defined(_GIL_) || defined(_LIN_)  || defined(_MAC_)
-      IQUN=2
-      JQUN=2
-#endif
-#if defined(_WXS_)  || defined (_INW_)
-      IQUN=2
-      JQUN=2
-#endif
 #if defined(_VAX_) 
       IQUN=2
       JQUN=0
+#else
+      IQUN=2
+      JQUN=2
 #endif
       IUSFLG = 0 
       NCSU = 11

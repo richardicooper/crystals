@@ -1,5 +1,9 @@
 CRYSTALS CODE FOR VANDER.FOR                                                    
-C $Log: not supported by cvs2svn $
+C $Log: vander.F,v $
+C Revision 1.4  2005/01/23 09:52:53  rich
+C Reinstate old history for Cameron files. History for changes since Dec 23 is
+C lost, but changes are not!
+C
 C Revision 1.1.1.1  2004/12/13 11:16:11  rich
 C New CRYSTALS repository
 C

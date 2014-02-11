@@ -59,23 +59,22 @@
 #if !defined(AFX_CRYSTALS_H__DEE5F4C5_D4B0_11D1_B74B_0080C8372E35__INCLUDED_)
 #define AFX_CRYSTALS_H__DEE5F4C5_D4B0_11D1_B74B_0080C8372E35__INCLUDED_
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
+  #if _MSC_VER >= 1000
+    #pragma once
+  #endif // _MSC_VER >= 1000
 
-#ifndef __AFXWIN_H__
+  #ifndef __AFXWIN_H__
     #error include 'stdafx.h' before including this file for PCH
-#endif
+  #endif
 
-#include "resource.h"       // main symbols
+  #include "resource.h"       // main symbols
 
-#endif
-#ifdef __BOTHWX__
+#else
 
-#include <wx/app.h>
-#include <wx/timer.h>
+  #include <wx/app.h>
+  #include <wx/timer.h>
 
 #endif
 
@@ -86,22 +85,24 @@ class CcController;
 // See gcrystals.cpp for the implementation of this class
 //
 
-#ifdef __CR_WIN__
-#define WM_CRYSTALS_COMMAND (WM_USER + 1)
+#ifdef CRY_USEMFC
+  #define WM_CRYSTALS_COMMAND (WM_USER + 1)
 
 class CCrystalsApp : public CWinApp
 {
-#endif
-#ifdef __BOTHWX__
+
+#else
+
 class CCrystalsApp : public wxApp
 {
+
 #endif
 
 public:
 
 //        bool CCrystalsApp::DoCommandTransferStuff();
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 // Overrides
     public:
 
@@ -114,8 +115,7 @@ public:
     afx_msg LRESULT OnStuffToProcess(WPARAM wp, LPARAM lp);
     DECLARE_MESSAGE_MAP()
 
-#endif
-#ifdef __BOTHWX__
+#else
 //    wxTimer * kickTimer;
 
 //    virtual void Activate(wxActivateEvent& event);
@@ -130,16 +130,14 @@ public:
     CcController* theControl;
 };
 
-#ifdef __CR_WIN__
-extern CCrystalsApp theApplication;
-#endif
-
-#ifdef __BOTHWX__
+#ifdef CRY_USEMFC
+   extern CCrystalsApp theApplication;
+#else
    DECLARE_APP(CCrystalsApp)
 #endif
 
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 
 //Remove dependency of new MFC library on OLEACC.DLL, by providing our own 
 //proxy functions, which do nothing if OLEACC.DLL cannot be loaded.

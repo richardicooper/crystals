@@ -7,7 +7,11 @@
 //   Filename:  CxDropDown.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxdropdown.h,v $
+//   Revision 1.12  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:18  rich
 //   New CRYSTALS repository
 //
@@ -46,15 +50,14 @@ class LStdPopupMenu;
 #include    <LStdControl.h>
 #endif
 
-#ifdef __BOTHWX__
-#include <wx/choice.h>
-#define BASEDROPDOWN wxChoice
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASEDROPDOWN CComboBox
+#else
+ #include <wx/choice.h>
+ #define BASEDROPDOWN wxChoice
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASEDROPDOWN CComboBox
-#endif
 
 class CrDropDown;
 class CxGrid;
@@ -93,15 +96,14 @@ class CxDropDown : public BASEDROPDOWN
         CrGUIElement *  ptr_to_crObject;
         static int  mDropDownCount;
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
         void    Selected();
         afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
         DECLARE_MESSAGE_MAP()
-#endif
-#ifdef __BOTHWX__
-			void Selected(wxCommandEvent & e);
-			void OnChar(wxKeyEvent & event );
-            DECLARE_EVENT_TABLE()
+#else
+		void Selected(wxCommandEvent & e);
+		void OnChar(wxKeyEvent & event );
+        DECLARE_EVENT_TABLE()
 #endif
 
 

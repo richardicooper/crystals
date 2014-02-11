@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: script.F,v $
+C Revision 1.76  2013/09/22 21:44:48  rich
+C Remove debug prints.
+C
 C Revision 1.75  2013/09/19 21:35:39  rich
 C Change precision of listing output where not important to reduce differences across platforms.
 C Important changes - SFLS now uses builtin cos() and sin() functions rather than Chebyshev
@@ -7340,7 +7343,7 @@ C
         CALL OUTCOL(1)
        ENDIF
 C----- RECOVER SCRIPT NAME
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_)|| defined(_INW_)
+#ifdef CRY_GUI
       ISTAT= KSCIDN(2,3,'SCRIPTNAME',1,IS,IDSCP,ISCPNM,1)
       ISTAT= KSCSDC( ISCPNM, CSCPNM, LENNM)
       IF (CSCPNM .NE. CLSTNM) CPRVNM = CLSTNM
@@ -7364,7 +7367,7 @@ C
         ISTAT = KRDLIN ( NCUFU(1) , CLINPB , IINPLN )
 C -- IF NOT IN SILENT MODE ECHO THE TEXT TO THE OUTPUT FOR THE 
 C    GUI VERSION
-#if defined(_GID_) 
+#if defined(CRY_GUI) 
         IF ( ( ISILNT .EQ. 0 ) .OR. ( IFAILS .EQ. 1 ) ) THEN
          WRITE(CMON,'(A)') CLINPB(1:IINPLN)
          CALL XPRVDU(NCVDU,1,0)

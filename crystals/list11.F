@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: list11.F,v $
+C Revision 1.7  2013/11/26 11:49:02  pascal
+C removed not used arguments from srtdwn
+C
 C Revision 1.6  2008/12/15 14:57:44  djw
 C Move List 11 error messages into XFAL11 itself
 C

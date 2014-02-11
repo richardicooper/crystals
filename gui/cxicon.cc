@@ -7,7 +7,11 @@
 //   Filename:  CxIcon.cc
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxicon.cc,v $
+//   Revision 1.7  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:18  rich
 //   New CRYSTALS repository
 //
@@ -38,11 +42,10 @@ int   CxIcon::mTextCount = kIconBase;
 CxIcon *    CxIcon::CreateCxIcon( CrIcon * container, CxGrid * guiParent )
 {
       CxIcon      *theText = new CxIcon( container );
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     theText->Create(NULL, SS_ICON|WS_CHILD|WS_VISIBLE,CRect(0,0,20,20),guiParent);
     theText->SetFont(CcController::mp_font);
-#endif
-#ifdef __BOTHWX__
+#else
       theText->Create(guiParent, -1, "");
 #endif
       return theText;
@@ -62,10 +65,9 @@ CxIcon::~CxIcon()
 
 void CxIcon::CxDestroyWindow()
 {
-  #ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 DestroyWindow();
-#endif
-#ifdef __BOTHWX__
+#else
 Destroy();
 #endif
 }
@@ -77,10 +79,9 @@ CXGETGEOMETRIES(CxIcon)
 
 int   CxIcon::GetIdealWidth()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       return GetSystemMetrics(SM_CXICON);
-#endif
-#ifdef __BOTHWX__
+#else
       int cx,cy;
       GetTextExtent( GetLabel(), &cx, &cy );
       return cx;
@@ -90,10 +91,9 @@ int   CxIcon::GetIdealWidth()
 
 int   CxIcon::GetIdealHeight()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       return GetSystemMetrics(SM_CYICON);
-#endif
-#ifdef __BOTHWX__
+#else
       return GetCharHeight();
 #endif
 }
@@ -117,7 +117,7 @@ void  CxIcon::SetVisibleChars( int count )
 
 void CxIcon::SetIconType( int iIconId )
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       HICON icon;
       switch ( iIconId )
       {
@@ -137,8 +137,7 @@ void CxIcon::SetIconType( int iIconId )
       }
 
       SetIcon ( icon );
-#endif
-#ifdef __BOTHWX__
+#else
       switch ( iIconId )
       {
             case kTIconInfo:

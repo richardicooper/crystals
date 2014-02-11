@@ -19,12 +19,18 @@ SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 
 
+if(APPLE)
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmakemodules/")
 SET(wxWidgets_CONFIG_EXECUTABLE /Users/richard.cooper/wxWidgets-2.9.5/b2/wx-config)
+endif()
+
 FIND_PACKAGE(wxWidgets REQUIRED html adv core gl base stc)
 INCLUDE(${wxWidgets_USE_FILE})
 
+if (APPLE)
 SET(APPS ${CMAKE_BINARY_DIR}/crystals.app)
+endif()
+
 SET(DIRS )
 
 IF (NOT CMAKE_BUILD_TYPE)   # make sure that the default is a RELEASE
@@ -85,22 +91,32 @@ INCLUDE(CTest)
 
 # Libraries
 ADD_SUBDIRECTORY(script)
+ADD_SUBDIRECTORY(sleef)
 ADD_SUBDIRECTORY(gui)
 ADD_SUBDIRECTORY(crystals)
 ADD_SUBDIRECTORY(cameron)
-ADD_SUBDIRECTORY(bits)
 ADD_SUBDIRECTORY(datafiles)
+if(APPLE)
+ADD_SUBDIRECTORY(bits)
 ADD_SUBDIRECTORY(precomp)
+endif()
 
 # Executables
 
-ADD_DEFINITIONS(-D_GIL_)
+ADD_DEFINITIONS(-D__MIN__)
 ADD_DEFINITIONS(-D_GNUF77_)
-ADD_DEFINITIONS(-D__WXMAC__)
-ADD_DEFINITIONS(-D__WXOSX__)
+#ADD_DEFINITIONS(-D__WXMAC__)
+#ADD_DEFINITIONS(-D__WXOSX__)
+
+# -I c:/wx/include
+
+ADD_CUSTOM_COMMAND( OUTPUT rc.o
+                    COMMAND windres ${CMAKE_CURRENT_SOURCE_DIR}/gui/wx.rc -o rc.o -I${wxWidgets_ROOT_DIR}/include
+                     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gui/wx.rc )
 
 # Script file sources and targets
 
+#if(APPLE)
 FILE (GLOB sscfiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/script/*.ssc")
 SET  (scpfiles)
 FOREACH (_file ${sscfiles})
@@ -123,21 +139,24 @@ FOREACH (_file ${sdafiles})
     LIST(APPEND datfiles ${file_dat})
 ENDFOREACH()
 
-FILE (GLOB ssrfiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/datafiles/*.ssr")
+FILE (GLOB ssrfiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/datafiles" "${CMAKE_CURRENT_SOURCE_DIR}/datafiles/*.ssr")
 SET  (srtfiles)
 FOREACH (_file ${ssrfiles})
     STRING(REPLACE ".ssr" ".srt" file_srt ${_file})
     ADD_CUSTOM_COMMAND( OUTPUT ${file_srt} 
-                        COMMAND perl ${CMAKE_CURRENT_SOURCE_DIR}/editor/crysedit.pl ${CMAKE_CURRENT_SOURCE_DIR}/${_file} ${file_srt} code=GIL incl=+ excl=- comm=\#
-                        DEPENDS ${_file} )
+                        COMMAND perl ${CMAKE_CURRENT_SOURCE_DIR}/editor/crysedit.pl ${CMAKE_CURRENT_SOURCE_DIR}/datafiles/${_file} ${file_srt} code=GIL incl=+ excl=- comm=\#
+                        DEPENDS datafiles/${_file} )
     LIST(APPEND srtfiles ${file_srt})
 ENDFOREACH()
+#endif()
 
-
+if(APPLE)
 SET_SOURCE_FILES_PROPERTIES( ${scpfiles} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/script GENERATED 1  )
 SET_SOURCE_FILES_PROPERTIES( ${datfiles} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/script GENERATED 1  )
 SET_SOURCE_FILES_PROPERTIES( ${srtfiles} PROPERTIES MACOSX_PACKAGE_LOCATION Resources GENERATED 1  )
+endif()
 
+#ADD_CUSTOM_TARGET ( sleef ALL DEPENDS sleef/sleefsp.o )
 ADD_CUSTOM_TARGET ( startups ALL DEPENDS dscbuild ${srtfiles} )
 ADD_CUSTOM_TARGET ( dscbuild ALL DEPENDS commands.dsc crystals )
 
@@ -145,46 +164,61 @@ SET_SOURCE_FILES_PROPERTIES( commands.dsc PROPERTIES MACOSX_PACKAGE_LOCATION Res
 
 set( MACOSX_BUNDLE_ICON_FILE crystals.icns )
 
-ADD_CUSTOM_COMMAND ( OUTPUT commands.dsc COMMAND cp datafiles/commands.dsc . DEPENDS subdscbuild ${CMAKE_BINARY_DIR}/datafiles/commands.dsc )
+#ADD_CUSTOM_COMMAND ( OUTPUT commands.dsc COMMAND cp datafiles/commands.dsc . DEPENDS subdscbuild ${CMAKE_BINARY_DIR}/datafiles/commands.dsc )
+ADD_CUSTOM_COMMAND ( OUTPUT commands.dsc COMMAND ${CMAKE_COMMAND} -E copy datafiles/commands.dsc . DEPENDS subdscbuild ${CMAKE_BINARY_DIR}/datafiles/commands.dsc )
 
 
+IF(APPLE)
 ADD_CUSTOM_TARGET ( osx_bundle_dirs
     COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/ProjectName.app/Contents/Resources
     COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/ProjectName.app/Contents/MacOS
     COMMAND cp ${CMAKE_SOURCE_DIR}/precomp/MAC/${MACOSX_BUNDLE_ICON_FILE}
     ${CMAKE_CURRENT_BINARY_DIR}/crystals.app/Contents/Resources/${MACOSX_BUNDLE_ICON_FILE} )
+ENDIF()
 
+ADD_EXECUTABLE (crystals MACOSX_BUNDLE ${scpfiles} ${datfiles} ${srtfiles} gui/gcrystals.cc rc.o)
 
-ADD_EXECUTABLE (crystals MACOSX_BUNDLE ${scpfiles} ${datfiles} ${srtfiles} gui/gcrystals.cc)
-
+IF(APPLE)
 add_dependencies(crystals osx_bundle_dirs )
+endif()
 
+# TARGET_LINK_LIBRARIES(crystals CrystalsSleef)
 
-TARGET_LINK_LIBRARIES(crystals CameronFortran CrystalsFortran CrystalsUserInterface ${wxWidgets_LIBRARIES})
+add_library(everything $<TARGET_OBJECTS:CrystalsUserInterface> $<TARGET_OBJECTS:CrystalsFortran>)
+
+TARGET_LINK_LIBRARIES(crystals everything CrystalsSleef CameronFortran ${wxWidgets_LIBRARIES})
 
 INSTALL(CODE "
       include(BundleUtilities)
       fixup_bundle(\"${APPS}\"  \"\"  \"${DIRS}\")
       " COMPONENT Runtime)
 
-INSTALL(FILES ${CMAKE_BINARY_DIR}/commands.dsc DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
 
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/cif2cry/cif2cry DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/shelxs/shelxs DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/shelxs/sxtocry DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/convplat/convplat DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/delred/delred DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/foxman/pcf2cry DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/sir92/sir92 DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/csd2cry/csd2cry DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/hklf5/hklf52cry DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/Diffractometers/diffin DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources )
 
-FILE (COPY "${CMAKE_CURRENT_SOURCE_DIR}/precomp/all/script" DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources)
-FILE (COPY "${CMAKE_CURRENT_SOURCE_DIR}/precomp/all/demo" DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources)
-FILE (COPY "${CMAKE_CURRENT_SOURCE_DIR}/precomp/all/form.dat" DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources)
 
-INSTALL (PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/precomp/MAC/superflip" DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources)
-INSTALL (PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/precomp/MAC/EDMA" DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources)
+if(APPLE)
+set (CRYSTALS_BINARY_DESTINATION ${CMAKE_BINARY_DIR}/crystals.app/Contents/Resources)
+else()
+set (CRYSTALS_BINARY_DESTINATION ${CMAKE_BINARY_DIR})
+endif()
 
+INSTALL(FILES ${CMAKE_BINARY_DIR}/commands.dsc DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/cif2cry/cif2cry DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/shelxs/shelxs DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/shelxs/sxtocry DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/convplat/convplat DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/delred/delred DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/foxman/pcf2cry DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/sir92/sir92 DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/csd2cry/csd2cry DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/hklf5/hklf52cry DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/bits/Diffractometers/diffin DESTINATION ${CRYSTALS_BINARY_DESTINATION} )
+
+FILE (COPY "${CMAKE_CURRENT_SOURCE_DIR}/precomp/all/script" DESTINATION ${CRYSTALS_BINARY_DESTINATION})
+FILE (COPY "${CMAKE_CURRENT_SOURCE_DIR}/precomp/all/demo" DESTINATION ${CRYSTALS_BINARY_DESTINATION})
+FILE (COPY "${CMAKE_CURRENT_SOURCE_DIR}/precomp/all/form.dat" DESTINATION ${CRYSTALS_BINARY_DESTINATION})
+
+INSTALL (PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/precomp/MAC/superflip" DESTINATION ${CRYSTALS_BINARY_DESTINATION})
+INSTALL (PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/precomp/MAC/EDMA" DESTINATION ${CRYSTALS_BINARY_DESTINATION})
 

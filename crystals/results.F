@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: results.F,v $
+C Revision 1.203  2013/05/25 09:28:06  rich
+C Internal buffer read was one character too long.
+C
 C Revision 1.202  2013/04/25 14:49:19  rich
 C Update cell esd calc (in CIF) to use equation from Giacovazzo p123.
 C
@@ -845,7 +848,7 @@ C--END OF THE REFLECTIONS  -  EXIT
       IF (ISSPRT .EQ. 0) THEN
       IF ( ILSTRF .GT. 0 ) WRITE ( NCWU,'(A)' ) CHAR(12)
       ENDIF
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
       IF ( IPCHRF .GT. 0 ) WRITE ( NCPU ,'(A)' ) CHAR(12)
 #endif
 1720  CONTINUE
@@ -1117,7 +1120,7 @@ C
       IF (ISSPRT .EQ. 0) THEN
       IF( ILSTRF .GT. 0) WRITE(NCWU, '(A)') CHAR(12)
       ENDIF
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
       IF( IPCHRF .GT. 0) WRITE(NCPU, '(A)') CHAR(12)
 C--CLEAR THE PRINT LINE TO BLANKS
 #endif
@@ -1424,7 +1427,7 @@ C
       IF (ISSPRT .EQ. 0) THEN
         IF(ILSTCO .GT. 0) WRITE(NCWU,'(A)')CHAR(12)
       ENDIF
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
       IF(IPCHCO .EQ. 1) WRITE(NCPU,'(A)')CHAR(12)
 C
 C----- OUTPUT THE OVERALL PARAMETERS
@@ -1804,7 +1807,7 @@ C
 c          WRITE(123,*)NXF
           CALL SNUM(STORE(MP),BPD(MPD),NXD,NOP,J,LINEA)
           IF (IPCHCO .EQ. 3) THEN  
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
             WRITE(CHTML,'(80A1)') LINEA(LOJ:J+4)
 #else
             WRITE(CHTML,'(80A1)') (LINEA(JR),JR=LOJ,J+4)
@@ -1866,7 +1869,7 @@ C----- INDICATE THAT THERE ARE SOME U[ANISO] TO PRINT
 C----- PRINT THE ISO OR EQUIV TEMPERATURE FACTOR
         CALL SNUM(BUFF(2),BPD(2),NUD,NOP,J,LINEA)
         IF (IPCHCO .EQ. 3) THEN
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
           WRITE(CHTML,'(80A1)') LINEA(LOJ:J+4)
 #else
           WRITE(CHTML,'(80A1)') (LINEA(JR),JR=LOJ,J+4)
@@ -1889,7 +1892,7 @@ c            w = store(m5+2)*store(m5+13)
         endif
         CALL SNUM ( W, BPD(1), NUD, NOP, J, LINEC)
         IF (IPCHCO .EQ. 3) THEN  
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
           WRITE(CHTML,'(80A1)') LINEC(LOJ:J+4)
 #else
           WRITE(CHTML,'(80A1)') (LINEC(JR),JR=LOJ,J+4)
@@ -1923,7 +1926,7 @@ C--END OF THE PAGE  -  START A NEW PAGE
         IF (ISSPRT .EQ. 0) THEN
           IF ( ILSTCO .GT. 0 ) WRITE( NCWU , '(A)') CHAR(12)
         ENDIF
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
       IF ( IPCHCO .EQ. 1 ) WRITE(NCPU, '(A)') CHAR(12)
 #endif
         CALL STATX(LINEB)
@@ -2216,7 +2219,7 @@ C--LOOP OVER THE PARAMETERS
       J=J+NUF
       CALL SNUM(STORE(MP),BPD(MPD),NUD,NOP,J,LINEA)
       IF (IPCHCO .EQ. 3) THEN  
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
           WRITE(CHTML,'(80A1)') LINEA(LOJ:J+4)
 #else
           WRITE(CHTML,'(80A1)') (LINEA(JR),JR=LOJ,J+4)
@@ -2261,7 +2264,7 @@ C--NEW PAGE
       IF (ISSPRT .EQ. 0) THEN
       IF ( ILSTAN .GT. 0 ) WRITE( NCWU , '(A)') CHAR(12)
       ENDIF
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
       IF ( IPCHAN .EQ. 1 ) WRITE(NCPU, '(A)') CHAR(12)
 #endif
       CALL STATX(LINEB)
@@ -2445,10 +2448,11 @@ C
       DATA CCIF /
      3      '_refine_ls_extinction_coef','_oxford_refine_ls_scale' /
 C
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
-      IFUNC = IFUNC
-CDJWMAY99 - PREAPRE TO APPEND CIF OUTPUT ON FRN1
-#endif
+c RICDEC13 - Not necessary:
+c#if !defined(_GID_) && !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+c      IFUNC = IFUNC
+cCDJWMAY99 - PREAPRE TO APPEND CIF OUTPUT ON FRN1
+c#endif
       CALL XMOVEI(KEYFIL(1,23), KDEV, 4)
       CALL XRDOPN(8, KDEV , CSSCIF, LSSCIF)
 C -- SET INITIAL VALUES.
@@ -2596,11 +2600,11 @@ C
       INCLUDE 'QSTORE.INC'
 C
 C
-C
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+C RICDEC13 - not necessary
+c#if !defined(_GID_) && !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
       IFUNC = IFUNC
 
-#endif
+c#endif
       IF ( MD5ES .EQ. 0 ) RETURN
 
 CDJWMAY99 - PREAPRE TO APPEND CIF OUTPUT ON FRN1
@@ -4755,7 +4759,7 @@ C###################################################################
         CALL XPCIF (' ')
 C-----  COPY HEADER INFORMATION FROM .CIF FILE
         CALL XMOVEI (KEYFIL(1,2),JDEV,4)
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_OSWIN32
         CALL XRDOPN(6,JDEV,'CRYSDIR:script\refcif.dat',25)
 #else
         CALL XRDOPN(6,JDEV,'CRYSDIR:script/refcif.dat',25)
@@ -4769,7 +4773,7 @@ C-----  COPY HEADER INFORMATION FROM .CIF FILE
           GO TO 100
 150       CONTINUE
 C----- CLOSE THE FILE
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_OSWIN32
           CALL XRDOPN(7,JDEV,'CRYSDIR:script\refcif.dat',25)
 #else
           CALL XRDOPN(7,JDEV,'CRYSDIR:script/refcif.dat',25)
@@ -4852,7 +4856,7 @@ C################################################################
       IF ( IPUNCH .GE. 0 ) THEN
 C-----  LOAD THE AVAILABLE REFERENCE TABLE
         CALL XMOVEI (KEYFIL(1,2),JDEV,4)
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_OSWIN32
       CALL XRDOPN(6,JDEV,'CRYSDIR:script\reftab.dat',25)
 #else
       CALL XRDOPN(6,JDEV,'CRYSDIR:script/reftab.dat',25)
@@ -4890,7 +4894,7 @@ C
             IF (ISSPRT.EQ.0) WRITE (NCWU,'(a)') CMON(1)
           END IF
 C      CLOSE THE REFERENCES FILE
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_OSWIN32
        CALL XRDOPN(7,JDEV,'CRYSDIR:script\reftab.dat', 25)
 #else
        CALL XRDOPN(7,JDEV,'CRYSDIR:script/reftab.dat', 25)
@@ -6940,7 +6944,7 @@ C
 
       IF ( IPUNCH .EQ. 0 ) THEN
 C - NOW LIST THE REFERENCES
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#if CRY_OSWIN32
       CALL XRDOPN(6,JDEV,'CRYSDIR:script\reftab.dat',25)
 #else
       CALL XRDOPN(6,JDEV,'CRYSDIR:script/reftab.dat',25)
@@ -6960,7 +6964,7 @@ C - NOW LIST THE REFERENCES
 2550  CONTINUE
 
       IF ( IPUNCH .EQ. 1 ) THEN
-#if !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#if CRY_NOGUI
       WRITE (NCPU,'(A)') CHAR(12)
 #endif
         WRITE (NCPU,'(5X,2A35)') ((CPAGE(I,J),J=1,NCOL),I=1,NROW)
@@ -6990,7 +6994,7 @@ C----- CLOSE THE 'CIF' OUTPUT FILE
       IF ( IPUNCH .EQ. 0 ) THEN
         CALL XRDOPN (7,KDEV,CSSCIF,LSSCIF)
 C      CLOSE THE REFERENCES FILE
-#if !defined(_GIL_) && !defined(_LIN_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_OSWIN32
        CALL XRDOPN(7,JDEV,'CRYSDIR:script\reftab.dat', 25)
 #else
        CALL XRDOPN(7,JDEV,'CRYSDIR:script/reftab.dat', 25)
@@ -7100,7 +7104,7 @@ C----- PRINT OUT THE USED-REFERENCES
 100   CONTINUE
       RETURN
 900   CONTINUE
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_) || defined(_INW_)
+#ifdef CRY_GUI
       CALL ZMORE ('Premature end',0)
 #endif
       RETURN

@@ -7,7 +7,11 @@
 //   Filename:  CcRect.cc
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   26.2.1998 9:36 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: ccrect.cc,v $
+//   Revision 1.13  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:17  rich
 //   New CRYSTALS repository
 //
@@ -150,7 +154,7 @@ bool CcRect::Contains(int x, int y)
 }
 
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 CRect CcRect::Native()
 {
   return CRect( mLeft, mTop, mRight, mBottom );

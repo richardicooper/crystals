@@ -1,4 +1,4 @@
-#if !defined (__CR_WIN__)
+#if !defined (CRY_USEMFC)
 
 #include "crystalsinterface.h"
 #include "crystals.h"

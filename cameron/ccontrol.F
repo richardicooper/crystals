@@ -1,6 +1,9 @@
 CRYSTALS CODE FOR CCONTROL.FOR
 
-C $Log: not supported by cvs2svn $
+C $Log: ccontrol.F,v $
+C Revision 1.27  2012/07/18 07:42:04  djw
+C remember to set flag to ISO if all Uij impossibly small
+C
 C Revision 1.26  2012/07/13 15:51:21  djw
 C Horrid patch to fix input when atom is flagged as aniso, but all Uij are zero
 C (cif from joournal). U11,22,33 set to very small number.

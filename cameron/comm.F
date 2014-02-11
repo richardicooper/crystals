@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: comm.F,v $
+C Revision 1.31  2012/03/23 14:05:55  rich
+C Intel compiler platform (INW) support.
+C
 C Revision 1.30  2009/07/02 09:24:50  djw
 C Simplify encapsulated postscript printing.  Diagrams are now in landscape mode (as
 C  normal PS) and do not need re-scalling. Bounding box is the full A4 sheet so does

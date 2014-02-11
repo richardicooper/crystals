@@ -7,7 +7,10 @@
 //   Filename:  CcModelDoc.cc
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: ccmodeldoc.h,v $
+//   Revision 1.27  2012/05/11 10:13:31  rich
+//   Various patches to wxWidget version to catch up to MFc version.
+//
 //   Revision 1.26  2011/05/17 14:43:31  rich
 //   Remove class name from declaration.
 //
@@ -104,14 +107,12 @@
 #ifndef     __CcModelDoc_H__
 #define     __CcModelDoc_H__
 
-#ifdef __CR_WIN__
-#include <GL/glu.h>
-#include <GL/gl.h>
-#endif
-#ifdef __BOTHWX__
-#include <wx/glcanvas.h>
-//#include <windows.h>
-#include <GL/glu.h>
+#ifdef CRY_USEMFC
+ #include <GL/glu.h>
+ #include <GL/gl.h>
+#else
+ #include <wx/glcanvas.h>
+ #include <GL/glu.h>
 #endif
 
 #include <string>

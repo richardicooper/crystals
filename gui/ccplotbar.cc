@@ -6,7 +6,10 @@
 //   Authors:   Richard Cooper and Steve Humphreys
 //   Created:   10.11.2001 10:28
 
-// $Log: not supported by cvs2svn $
+// $Log: ccplotbar.cc,v $
+// Revision 1.31  2005/04/20 15:26:14  djw
+// Plot Bargraphs bars over the baseline
+//
 // Revision 1.30  2005/01/23 10:20:24  rich
 // Reinstate CVS log history for C++ files and header files. Recent changes
 // are lost from the log, but not from the files!
@@ -136,7 +139,7 @@
 #include    <string>
 #include    <sstream>
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 #include <wx/thread.h>
 #endif
 

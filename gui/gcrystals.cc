@@ -8,27 +8,25 @@
 using namespace std;
 
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
   #include "stdafx.h"
   #include <cstdlib>
-#endif
-
-#ifdef __BOTHWX__
+#else
   #include <wx/event.h>
   #include <wx/app.h>
   #include <wx/config.h>
+  #ifdef CRY_OSWIN32
+    #include <wx/msw/regconf.h>
+  #endif
 #endif
 
-#ifdef __WXMSW__
-  #include <wx/msw/regconf.h>
-#endif
 
 #include "ccrect.h"
 #include "cccontroller.h"
 
 //#include "Stackwalker.h"
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
   #ifdef __CRDEBUG__
     #undef THIS_FILE
     static char THIS_FILE[] = __FILE__;
@@ -190,9 +188,7 @@ using namespace std;
     delete (CFrameWnd*)m_pMainWnd;
     return exit;
   }
-#endif
-
-#ifdef __BOTHWX__
+#else
   // The one and only CCrystalsApp object
   IMPLEMENT_APP(CCrystalsApp)
 
@@ -249,11 +245,11 @@ using namespace std;
 
 }
 */
-  #ifdef __WXGTK__
+  #ifdef CRY_OSLINUX
     #include <X11/Xlib.h>
   #endif
 
-#if defined(__WXMAC__)
+#if defined(CRY_OSMAC)
   #include <Carbon/Carbon.h>
   #include <stdlib.h>
   #include <iostream>
@@ -319,7 +315,7 @@ using namespace std;
     string dscfile;
 
 
-#if defined(__WXMAC__)
+#ifdef CRY_OSMAC
     UInt8 tPath[PATH_MAX];
     if (getenv("FINDER") != NULL)
       {
@@ -346,7 +342,7 @@ using namespace std;
       char * env = new char[location.size()+1];
       strcpy(env, location.c_str());
       stringlist.push_back(env);
-#ifdef __BOTHWIN__      
+#ifdef CRY_OSWIN32      
       _putenv( env );
 #else     
       putenv( env );
@@ -373,7 +369,7 @@ using namespace std;
           char * env = new char[envvar.size()+1];
           strcpy(env, envvar.c_str());
           stringlist.push_back(env);
-#if defined (__BOTHWIN__)
+#if defined (CRY_OSWIN32)
           _putenv( env );
 #else
           putenv( env );
@@ -432,7 +428,7 @@ using namespace std;
 
 
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 
   // Remove dependency of new MFC library on OLEACC.DLL, by 
   // providing our own proxy functions, which do nothing if 

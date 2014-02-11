@@ -7,7 +7,10 @@
 //   Filename:  CxText.cc
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxtext.cc,v $
+//   Revision 1.13  2012/05/11 10:13:31  rich
+//   Various patches to wxWidget version to catch up to MFc version.
+//
 //   Revision 1.12  2012/03/26 11:37:55  rich
 //   Better sizing.
 //
@@ -47,11 +50,11 @@ int CxText::mTextCount = kTextBase;
 CxText *    CxText::CreateCxText( CrText * container, CxGrid * guiParent )
 {
     CxText  *theText = new CxText( container );
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     theText->Create("Text", SS_LEFTNOWORDWRAP| WS_CHILD| WS_VISIBLE, CRect(0,0,20,20), guiParent);
     theText->SetFont(CcController::mp_font);
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
     theText->Create(guiParent, -1, "text", wxPoint(0,0),wxSize(0,0), 0); // wxTRANSPARENT_WINDOW);
 #endif
     return theText;
@@ -71,10 +74,10 @@ CxText::~CxText()
 
 void CxText::CxDestroyWindow()
 {
-  #ifdef __CR_WIN__
+  #ifdef CRY_USEMFC
 DestroyWindow();
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 Destroy();
 #endif
 }
@@ -82,12 +85,12 @@ Destroy();
 
 void    CxText::SetText( const string & text )
 {
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
     SetLabel(text.c_str());
     SetSize(GetIdealWidth(),GetHeight());
     Refresh();
 #endif
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     SetWindowText(text.c_str());
 //    MoveWindow(GetLeft(),GetTop(),GetIdealWidth(),GetHeight(),true); //Naughty but harmless.
 #endif
@@ -102,7 +105,7 @@ CXGETGEOMETRIES(CxText)
 
 int CxText::GetIdealWidth()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     CString text;
     SIZE size;
     CClientDC dc(this);
@@ -112,7 +115,7 @@ int CxText::GetIdealWidth()
     dc.SelectObject(oldFont);
     return ( size.cx );
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       int cx,cy;
       GetTextExtent( GetLabel(), &cx, &cy );
       return cx;
@@ -122,7 +125,7 @@ int CxText::GetIdealWidth()
 
 int CxText::GetIdealHeight()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     CString text;
     SIZE size;
     CClientDC dc(this);
@@ -132,7 +135,7 @@ int CxText::GetIdealHeight()
     dc.SelectObject(oldFont);
     return ( size.cy );
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       int cx,cy;
       GetTextExtent( GetLabel(), &cx, &cy );
       return (cy+5); // nice height for static text

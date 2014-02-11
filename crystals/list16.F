@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: list16.F,v $
+C Revision 1.20  2011/10/14 13:48:09  djw
+C Fix interaction between A-DIST and MEAN and DiIFF restraints
+C
 C Revision 1.19  2011/10/13 14:41:31  djw
 C Add asymmetric distacne restraint
 C

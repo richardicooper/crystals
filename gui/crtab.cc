@@ -78,7 +78,7 @@ CrTab::CrTab( CrGUIElement * mParentPtr )
 CrTab::~CrTab()
 {
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 //The wxNotebook class likes to delete all of its own tabs,
 //we can't have this because we need to delete all the Cr classes
 //aswell, so before deleting anything, we simply remove all the
@@ -99,7 +99,7 @@ CrTab::~CrTab()
     if ( ptr_to_cxObject != nil )
     {
       ((CxTab*)ptr_to_cxObject)->CxDestroyWindow();
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
       delete (CxTab*)ptr_to_cxObject;
 #endif
       ptr_to_cxObject = nil;
@@ -205,7 +205,7 @@ CcParse CrTab::ParseInput( deque<string> & tokenList )
             tabData->tabGrid = gridPtr;
             mTabsList.push_back( gridPtr );
             ((CxTab*)ptr_to_cxObject)->AddTab(tabData) ;
-#ifdef __BOTHWIN__
+#ifdef CRY_OSWIN32
 //NB- under Win32 we manage the tabs, under wx the framework manages them.
             if ( m_nTabs )
             {

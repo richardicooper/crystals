@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: solve.F,v $
+C Revision 1.72  2013/11/11 21:01:45  rich
+C Set CTEXT for overall parameters outside conditional print block
+C
 C Revision 1.71  2013/11/07 10:47:26  pascal
 C fix stack overflow for digital compiler
 C

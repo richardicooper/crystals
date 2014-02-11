@@ -6,7 +6,10 @@
  *
  */
  
- //   $Log: not supported by cvs2svn $
+ //   $Log: cccrystcommandlistener.cc,v $
+ //   Revision 1.2  2005/02/07 14:22:16  stefan
+ //   1. Corrected some mistakes in the sending of messages to the CWinApp
+ //
  //   Revision 1.1  2005/02/04 17:21:40  stefan
  //   1. A set of classes to extent CcSafeDeque to allow easy change notification.
  //   2. A set of classese to more generalise CcSafeDeques uses.
@@ -15,16 +18,16 @@
 #include "crystalsinterface.h"
 #include "cccrystcommandlistener.h"
 
-#if defined(__BOTHWX__)
-CcCrystalsCommandListener::CcCrystalsCommandListener(wxEvtHandler * pEventHandler, const wxEventType pEvent):iEventHandler(pEventHandler), iEvent(pEvent)
+#ifdef CRY_USEMFC
+  CcCrystalsCommandListener::CcCrystalsCommandListener(CWinThread* pMessageHandler, const UINT pMessage):iMessageHandler(pMessageHandler), iMessage(pMessage)
 #else
-CcCrystalsCommandListener::CcCrystalsCommandListener(CWinThread* pMessageHandler, const UINT pMessage):iMessageHandler(pMessageHandler), iMessage(pMessage)
+  CcCrystalsCommandListener::CcCrystalsCommandListener(wxEvtHandler * pEventHandler, const wxEventType pEvent):iEventHandler(pEventHandler), iEvent(pEvent)
 #endif
 {}
-#if defined(__BOTHWX__)
-CcCrystalsCommandListener::CcCrystalsCommandListener(const CcCrystalsCommandListener& pListener):iEventHandler(pListener.iEventHandler), iEvent(pListener.iEvent)
+#ifdef CRY_USEMFC
+  CcCrystalsCommandListener::CcCrystalsCommandListener(const CcCrystalsCommandListener& pListener):iMessageHandler(pListener.iMessageHandler), iMessage(pListener.iMessage)
 #else
-CcCrystalsCommandListener::CcCrystalsCommandListener(const CcCrystalsCommandListener& pListener):iMessageHandler(pListener.iMessageHandler), iMessage(pListener.iMessage)
+  CcCrystalsCommandListener::CcCrystalsCommandListener(const CcCrystalsCommandListener& pListener):iEventHandler(pListener.iEventHandler), iEvent(pListener.iEvent)
 #endif
 {}
 
@@ -35,10 +38,10 @@ CcListener* CcCrystalsCommandListener::clone() const
 
 void CcCrystalsCommandListener::perform(const void* pData)
 {
-#if defined(__BOTHWX__)
+#ifdef CRY_USEMFC
+	iMessageHandler->PostThreadMessage(iMessage, (WPARAM)pData, 0);
+#else
 	wxCommandEvent tEvent(iEvent);
 	iEventHandler->AddPendingEvent(tEvent);
-#else
-	iMessageHandler->PostThreadMessage(iMessage, (WPARAM)pData, 0);
 #endif
 }

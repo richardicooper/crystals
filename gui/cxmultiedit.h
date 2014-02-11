@@ -7,7 +7,11 @@
 //   Filename:  CxMultiEdit.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   5.3.1998 13:51 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxmultiedit.h,v $
+//   Revision 1.19  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:18  rich
 //   New CRYSTALS repository
 //
@@ -42,15 +46,14 @@
 
 #include "crystalsinterface.h"
 
-#ifdef __BOTHWX__
-#include <wx/textctrl.h>
-#define BASEMULTIEDIT wxTextCtrl
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASEMULTIEDIT CRichEditCtrl
+#else
+ #include <wx/textctrl.h>
+ #define BASEMULTIEDIT wxTextCtrl
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASEMULTIEDIT CRichEditCtrl
-#endif
 
 class CrMultiEdit;
 class CxGrid;
@@ -100,14 +103,13 @@ class CxMultiEdit : public BASEMULTIEDIT
         int             mIdealWidth;
         int             mHeight;
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 
         static DWORD CALLBACK MyStreamOutCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);
 
         afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
         DECLARE_MESSAGE_MAP()
-#endif
-#ifdef __BOTHWX__
+#else
     public:
         void OnChar(wxKeyEvent & event );
         DECLARE_EVENT_TABLE()

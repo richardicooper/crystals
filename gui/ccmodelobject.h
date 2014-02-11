@@ -6,13 +6,12 @@ class CrModel;
 class CcController;
 class CcModelDoc;
 #include "cccoord.h"
-#ifdef __CR_WIN__
-#include <GL/glu.h>
-#include <GL/gl.h>
-#endif
-#ifdef __BOTHWX__
-#include <wx/glcanvas.h>
-#include <GL/glu.h>
+#ifdef CRY_USEMFC
+ #include <GL/glu.h>
+ #include <GL/gl.h>
+#else
+ #include <wx/glcanvas.h>
+ #include <GL/glu.h>
 #endif
 
 #include <string>

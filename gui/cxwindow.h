@@ -7,7 +7,10 @@
 //   Filename:  CxWindow.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxwindow.h,v $
+//   Revision 1.25  2013/06/11 12:30:40  pascal
+//   Linux changes
+//
 //   Revision 1.24  2012/05/03 15:41:08  rich
 //   Mostly commented out debugging for future reference. Trying to track down flicker on dialog closure. May now be fixed...
 //
@@ -87,19 +90,17 @@
 #ifndef     __CxWindow_H__
 #define     __CxWindow_H__
 
-#ifdef __BOTHWX__
-#include <wx/frame.h>
-#include <wx/window.h>
-#include <wx/settings.h>
-#include <wx/menu.h>
-#include <wx/menuitem.h>
-//#include <wx/aui/aui.h>
-#define BASEWINDOW wxFrame
-#endif
-
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASEWINDOW CFrameWnd
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASEWINDOW CFrameWnd
+#else
+ #include <wx/frame.h>
+ #include <wx/window.h>
+ #include <wx/settings.h>
+ #include <wx/menu.h>
+ #include <wx/menuitem.h>
+ //#include <wx/aui/aui.h>
+ #define BASEWINDOW wxFrame
 #endif
 
 #include    "crguielement.h"
@@ -152,7 +153,7 @@ class CxWindow : public BASEWINDOW
 
   public:
 //PRIVATE MS WINDOWS SPECIFIC FUNCTIONS AND OVERRIDES
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     BOOL PreCreateWindow(CREATESTRUCT& cs);
     afx_msg void OnClose();
     afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -174,17 +175,14 @@ class CxWindow : public BASEWINDOW
     CWnd* mParentWnd;
     BOOL CxWindow::PreTranslateMessage(MSG* pMsg);
 
-#endif
-
-
-#ifdef __BOTHWX__
+#else
 
       void Activate( wxActivateEvent & event );
       void OnCloseWindow( wxCloseEvent & event );
       void OnSize ( wxSizeEvent & event );
       void OnChar ( wxKeyEvent & event );
       void OnMenuSelected(wxCommandEvent &event );
-#ifdef DEPRECATED__BOTHWX__
+#ifdef DEPRECATEDCRY_USEWX
 	  void OnHighlightMenuItem(wxMenuEvent & event);
 #endif
       void OnToolSelected(wxCommandEvent &event );

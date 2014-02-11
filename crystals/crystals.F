@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: crystals.F,v $
+C Revision 1.17  2012/03/23 13:52:55  rich
+C Intel support.
+C
 C Revision 1.16  2011/03/22 14:40:38  rich
 C Added extra file unit 'SCP2' which may be read by new script command EXTRACT2
 C
@@ -46,10 +49,8 @@ C
 C
 CODE FOR CRYSTL
 C      winapp 500000,1000000
-#if defined(_GID_) || defined(_WXS_) 
-      SUBROUTINE CRYSTL
-#elif defined(_GIL_)  || defined(_MAC_) || defined (_INW_)
-      SUBROUTINE CRYSTL
+#ifdef CRY_GUI 
+      SUBROUTINE CRYSTL() bind (c)
 #else 
       PROGRAM CRYSTL
 #endif

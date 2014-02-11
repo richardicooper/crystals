@@ -188,12 +188,12 @@ CrWindow::~CrWindow()
 
 
 void CrWindow::SetPane(void* ptr, unsigned int position, string text) {
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 	((CxWindow*)ptr_to_cxObject)->AddPane((wxWindow*)ptr, position, text);
 #endif
 }
 void CrWindow::SetPaneMin(void* ptr,int w,int h){
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 	((CxWindow*)ptr_to_cxObject)->SetPaneMin((wxWindow*)ptr, w, h);
 #endif
 }
@@ -821,7 +821,7 @@ void CrWindow::Cancelled()
    
       if (mSafeClose > 6)
       {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
           MessageBox(NULL,"Script not responding","Closing window",MB_OK);
 #endif
           LOGERR("Script not responding, window closed. " + mName);
@@ -1048,7 +1048,7 @@ void CrWindow::TimerFired()
 CcRect CrWindow::GetScreenArea()
 {
     CcRect retVal;
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     RECT screenRect;
     SystemParametersInfo( SPI_GETWORKAREA, 0, &screenRect, 0 );
 
@@ -1056,8 +1056,7 @@ CcRect CrWindow::GetScreenArea()
                 screenRect.left,
                 screenRect.bottom,
                 screenRect.right);
-#endif
-#ifdef __BOTHWX__
+#else
       retVal.mTop = 0;
       retVal.mLeft = 0;
       retVal.mBottom = wxSystemSettings::GetMetric(wxSYS_SCREEN_Y);

@@ -10,7 +10,10 @@
 
 //BIG NOTICE: PlotScatter is not a CrGUIElement, it's just data to be
 //            drawn onto a CrPlot. You can attach it to a CrPlot.
-// $Log: not supported by cvs2svn $
+// $Log: ccplotscatter.cc,v $
+// Revision 1.29  2013/01/17 15:45:24  rich
+// Draw axes before data points to avoid overdrawing.
+//
 // Revision 1.28  2012/01/04 14:32:06  rich
 // Bigger, rounder, circles in plots.
 //
@@ -138,8 +141,8 @@
 #include    <string>
 #include    <sstream>
 
-#ifdef __BOTHWX__
-#include <wx/thread.h>
+#ifdef CRY_USEWX
+ #include <wx/thread.h>
 #endif
 
 // set the graph type

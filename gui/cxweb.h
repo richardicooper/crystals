@@ -7,7 +7,10 @@
 //   Filename:  CxWeb.h
 //   Authors:   Richard Cooper
 //   Created:   04.3.2011 14:41 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxweb.h,v $
+//   Revision 1.2  2012/03/26 11:35:28  rich
+//   Deprecated for now.
+//
 //   Revision 1.1  2011/04/16 06:49:45  rich
 //   HTML control
 //
@@ -16,7 +19,7 @@
 #define     __CxButton_H__
 
 
-#ifdef DEPRECATED__BOTHWX__
+#ifdef DEPRECATEDCRY_USEWX
 
 #include    "crguielement.h"
 
@@ -68,7 +71,7 @@ class CxWeb : public BASEWEB
 
 
 // Private machine specific parts:
-#ifdef __BOTHWX__
+#ifndef CRY_USEMFC
             DECLARE_EVENT_TABLE()
 #endif
 
@@ -76,5 +79,5 @@ class CxWeb : public BASEWEB
 			int mIdealHeight;
 
 };
-#endif
+ #endif
 #endif

@@ -7,7 +7,11 @@
 //   Filename:  CxCheckBox.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxcheckbox.h,v $
+//   Revision 1.10  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:18  rich
 //   New CRYSTALS repository
 //
@@ -42,15 +46,14 @@ class LStdCheckBox;
 #include    <LStdControl.h>;
 #endif
 
-#ifdef __BOTHWX__
-#include <wx/checkbox.h>
-#define BASECHECKBOX wxCheckBox
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASECHECKBOX CButton
+#else
+ #include <wx/checkbox.h>
+ #define BASECHECKBOX wxCheckBox
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASECHECKBOX CButton
-#endif
 
 class CrCheckBox;
 class CxGrid;
@@ -84,16 +87,15 @@ class CxCheckBox : public BASECHECKBOX
         static int  mCheckBoxCount;
 
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
         afx_msg void BoxClicked();
         afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 
         DECLARE_MESSAGE_MAP()
-#endif
-#ifdef __BOTHWX__
-            void BoxClicked(wxCommandEvent & e);
-            void OnChar(wxKeyEvent & event );
-            DECLARE_EVENT_TABLE()
+#else
+        void BoxClicked(wxCommandEvent & e);
+        void OnChar(wxKeyEvent & event );
+        DECLARE_EVENT_TABLE()
 #endif
 
 

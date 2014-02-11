@@ -4,7 +4,11 @@
 //   Filename:  CxToolBar.h
 //   Authors:   Richard Cooper
 //   Created:   27.1.2001 09:50
-//   $Log: not supported by cvs2svn $
+//   $Log: cxtoolbar.h,v $
+//   Revision 1.9  2009/09/04 09:25:46  rich
+//   Added support for Show/Hide H from model toolbar
+//   Fixed atom picking after model update in extra model windows.
+//
 //   Revision 1.8  2005/01/23 10:20:24  rich
 //   Reinstate CVS log history for C++ files and header files. Recent changes
 //   are lost from the log, but not from the files!
@@ -52,21 +56,20 @@
 #include    "crguielement.h"
 #include <list>
 
-#ifdef __BOTHWX__
-#include <wx/toolbar.h>
-#define BASETOOLBAR wxWindow
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASETOOLBAR CWnd
+#else
+ #include <wx/toolbar.h>
+ #define BASETOOLBAR wxWindow
 
-class mywxToolBar : public wxToolBar
-{
+ class mywxToolBar : public wxToolBar
+ {
      void OnChar(wxKeyEvent & event );
      DECLARE_EVENT_TABLE()
-};
+ };
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASETOOLBAR CWnd
-#endif
 
 class CrToolBar;
 class CxGrid;
@@ -100,7 +103,7 @@ class CxToolBar : public BASETOOLBAR
      static int  mToolBarCount;
      int m_ImageIndex;
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 //     list<CBitmap*> m_bitmapList;
      CImageList* m_ImageList;
      CToolBarCtrl * m_ToolBar;
@@ -110,8 +113,7 @@ class CxToolBar : public BASETOOLBAR
      afx_msg void OnToolSelected(UINT nID);
      afx_msg BOOL OnToolTipNotify( UINT id, NMHDR * pNMHDR, LRESULT * pResult );
      DECLARE_MESSAGE_MAP()
-#endif
-#ifdef __BOTHWX__
+#else
 //     list<wxBitmap*> m_bitmapList;
      mywxToolBar * m_ToolBar;
      void OnChar(wxKeyEvent & event );

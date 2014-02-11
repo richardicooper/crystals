@@ -7,7 +7,10 @@
 //   Filename:  CrStretch.cc
 //   Authors:   Richard Cooper
 //   Created:   23.2.2001 11:35
-//   $Log: not supported by cvs2svn $
+//   $Log: cxstretch.h,v $
+//   Revision 1.6  2012/05/11 10:13:31  rich
+//   Various patches to wxWidget version to catch up to MFc version.
+//
 //   Revision 1.5  2005/01/23 10:20:24  rich
 //   Reinstate CVS log history for C++ files and header files. Recent changes
 //   are lost from the log, but not from the files!
@@ -35,15 +38,14 @@
 #define     __CxStretch_H__
 #include    "crguielement.h"
 
-#ifdef __BOTHWX__
-#include <wx/window.h>
-#define BASESTRETCH wxPanel
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASESTRETCH CWnd
+#else
+ #include <wx/window.h>
+ #define BASESTRETCH wxPanel
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASESTRETCH CWnd
-#endif
 
 class CrStretch;
 class CxGrid;
@@ -71,13 +73,12 @@ class CxStretch : public BASESTRETCH
     protected:
         // attributes
         static int  mStretchCount;
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
         afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
         afx_msg BOOL OnEraseBkgnd(CDC* pDC);
         DECLARE_MESSAGE_MAP()
-#endif
-#ifdef __BOTHWX__
-  public:
+#else
+    public:
         void OnChar(wxKeyEvent & event );
         DECLARE_EVENT_TABLE()
 #endif

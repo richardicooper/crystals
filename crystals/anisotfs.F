@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: anisotfs.F,v $
+C Revision 1.29  2011/03/21 13:57:21  rich
+C Update files to work with gfortran compiler.
+C
 C Revision 1.28  2011/01/18 12:21:52  djw
 C Complete referenc efor U-prime
 C
@@ -1472,10 +1475,7 @@ C----- COPY MATRICES FOR SAVING IN LIST 20
 C---OUTPUT NEW TENSORS
       IF (ISSPRT.EQ.0) WRITE (NCWU,1750)
       WRITE(CMON,1750)
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
-      CALL ZMORE(CMON,0)
-#endif
-#if defined(_WXS_) 
+#if defined(CRY_GUI)
       CALL ZMORE(CMON,0)
 #endif
 1750  FORMAT (' Tensors with respect to principal axes of L')

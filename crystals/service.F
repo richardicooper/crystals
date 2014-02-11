@@ -1,4 +1,7 @@
-C $Log: not supported by cvs2svn $
+C $Log: service.F,v $
+C Revision 1.51  2012/11/02 10:21:24  djw
+C Add COMMENT listing GUI colour schemes
+C
 C Revision 1.50  2012/07/12 08:14:24  rich
 C Save CRC lookup table after it is initialised.
 C
@@ -946,59 +949,30 @@ C -- FINAL CALL TO THE SPY
 C
       GO TO ( 8100 , 8200 , 8300 ) , ICODE
 8100  CONTINUE
-#if defined(_PPC_) 
-CS***
-      CALL exitthefortran
-      GLSTOP = 1
-      RETURN
-CE***
-C#PPC      STOP 'OK'
-#else
       CALL GUEXIT(0)
-#endif
+
 8200  CONTINUE
-#if defined(_PPC_) 
-C
-CS***
-      CALL finalcleanup
-      CALL nextlineofcommand( IOS, %loc(theLine) )
-      CALL exitthefortran
-CE***
-      STOP
-#endif
 #if !defined(_GID_) && !defined(_PPC_) && !defined(_WXS_) && !defined(_INW_) 
       write(*,*) ' Ending in error'
 #endif
 #if defined(_VAX_) 
       WRITE ( NCVDU , 8305 ) J/(icode-2)
 #endif
-#if !defined(_PPC_) 
       CALL GUEXIT(1)
-#endif
 8300  CONTINUE
 C
 C VAX -- CAUSE PROG. TO CRASH TO GET TRACEBACK
 C----WRITE STATEMENT IS NECESSARY TO FOOL  VAX FORTRAN OPTIMISER.
 C
-#if defined(_PPC_) 
-CS***
-      CALL finalcleanup
-      CALL nextlineofcommand( IOS, %loc(theLine) )
-      CALL exitthefortran
-CE***
-      STOP
-#endif
 #if !defined(_GID_) && !defined(_PPC_) && !defined(_WXS_) && !defined(_INW_) 
       write(*,*) ' Ending in serious error'
 #endif
 #if defined(_VAX_) 
       WRITE ( NCVDU , 8305 ) J/(icode-3)
 #endif
-#if !defined(_PPC_) 
 8305  FORMAT ( 1X , I10 )
 C
         CALL GUEXIT(2)
-#endif
       END
 C
 C --

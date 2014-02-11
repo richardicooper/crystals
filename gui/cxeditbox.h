@@ -7,7 +7,10 @@
 //   Filename:  CxEditBox.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxeditbox.h,v $
+//   Revision 1.13  2011/04/15 15:05:43  rich
+//   Fix event mechanism.
+//
 //   Revision 1.12  2005/01/23 10:20:24  rich
 //   Reinstate CVS log history for C++ files and header files. Recent changes
 //   are lost from the log, but not from the files!
@@ -49,15 +52,14 @@ class LEditField;
 #include    <LEditField.h>;
 #endif
 
-#ifdef __BOTHWX__
-#include <wx/textctrl.h>
-#define BASEEDITBOX wxTextCtrl
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASEEDITBOX CEdit
+#else
+ #include <wx/textctrl.h>
+ #define BASEEDITBOX wxTextCtrl
 #endif
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASEEDITBOX CEdit
-#endif
 
 class CrEditBox;
 class CxGrid;
@@ -114,16 +116,15 @@ class CxEditBox : public BASEEDITBOX
 		string mPreviousText;
 
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
         afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-            afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+        afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
         DECLARE_MESSAGE_MAP()
-#endif
-#ifdef __BOTHWX__
-            void OnChar(wxKeyEvent & event);
-            void OnKeyDown(wxKeyEvent & event);
-			void OnKeyUp( wxKeyEvent & event );
-            DECLARE_EVENT_TABLE()
+#else
+        void OnChar(wxKeyEvent & event);
+        void OnKeyDown(wxKeyEvent & event);
+		void OnKeyUp( wxKeyEvent & event );
+        DECLARE_EVENT_TABLE()
 #endif
 
 

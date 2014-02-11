@@ -7,7 +7,11 @@
 //   Filename:  CxGroupBox.h
 //   Authors:   Richard Cooper and Ludwig Macko
 //   Created:   22.2.1998 14:43 Uhr
-//   $Log: not supported by cvs2svn $
+//   $Log: cxgroupbox.h,v $
+//   Revision 1.10  2005/01/23 10:20:24  rich
+//   Reinstate CVS log history for C++ files and header files. Recent changes
+//   are lost from the log, but not from the files!
+//
 //   Revision 1.1.1.1  2004/12/13 11:16:18  rich
 //   New CRYSTALS repository
 //
@@ -31,14 +35,12 @@
 #define     __CxGroupBox_H__
 #include    "crguielement.h"
 
-#ifdef __CR_WIN__
-#include <afxwin.h>
-#define BASEGROUPBOX CButton
-#endif
-
-#ifdef __BOTHWX__
-#include <wx/statbox.h>
-#define BASEGROUPBOX wxStaticBox
+#ifdef CRY_USEMFC
+ #include <afxwin.h>
+ #define BASEGROUPBOX CButton
+#else
+ #include <wx/statbox.h>
+ #define BASEGROUPBOX wxStaticBox
 #endif
 
 class CrGrid;
@@ -60,7 +62,7 @@ class CxGroupBox : public BASEGROUPBOX
         // attributes
         static int mGroupBoxCount;
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     protected:
         afx_msg BOOL OnEraseBkgnd(CDC* pDC);
         DECLARE_MESSAGE_MAP()

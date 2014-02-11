@@ -4,7 +4,10 @@
 //   Filename:  CxTab.cc
 //   Authors:   Richard Cooper
 //   Created:   23.1.2001 23:38
-//   $Log: not supported by cvs2svn $
+//   $Log: cxtab.cc,v $
+//   Revision 1.14  2012/05/11 10:13:31  rich
+//   Various patches to wxWidget version to catch up to MFc version.
+//
 //   Revision 1.13  2005/03/02 14:41:53  stefan
 //   1. Return value for mac version from the tabs GetTabHeigh method
 //
@@ -74,12 +77,12 @@ int     CxTab::mTabCount = kTabBase;
 CxTab *    CxTab::CreateCxTab( CrTab * container, CxGrid * guiParent )
 {
     CxTab  *theTabCtrl = new CxTab( container );
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
     theTabCtrl->Create(TCS_TABS|WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,
                     CRect(0,0,200,200), guiParent,mTabCount++);
     theTabCtrl->SetFont(CcController::mp_font);
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
       theTabCtrl->Create(guiParent,-1,wxPoint(0,0),wxSize(10,10));
       theTabCtrl->Show(true);
       mTabCount++;
@@ -101,22 +104,22 @@ CxTab::~CxTab()
 
 void CxTab::CxDestroyWindow()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
   DestroyWindow();
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
   Destroy();
 #endif
 }
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 BEGIN_MESSAGE_MAP(CxTab, CTabCtrl)
    ON_NOTIFY_REFLECT(TCN_SELCHANGE, OnSelChange)
    ON_WM_CHAR()
 END_MESSAGE_MAP()
 #endif
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 //wx Message Map
 BEGIN_EVENT_TABLE(CxTab, wxNotebook)
       EVT_CHAR(CxTab::OnChar)
@@ -140,13 +143,13 @@ int CxTab::GetIdealHeight()
 
 void CxTab::AddTab(CcTabData * tab)
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
   TC_ITEM tctab;
   tctab.mask = TCIF_TEXT;
   tctab.pszText = (char*) tab->tabText.c_str();
   InsertItem( m_tab++, &tctab );
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
   AddPage ( (wxWindow*)tab->tabGrid->GetWidget(), tab->tabText.c_str() );
   LOGSTAT ( "$$$$$$ Adding a page to notebook" );
 #endif
@@ -155,7 +158,7 @@ void CxTab::AddTab(CcTabData * tab)
 
 int CxTab::GetTabsHeight()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
   CRect work(0,0,0,0);
   AdjustRect(TRUE,&work);
 //  LOGSTAT ( "CxTab::GetTabsHeight work t,b,l,r ="
@@ -166,11 +169,11 @@ int CxTab::GetTabsHeight()
 //  LOGSTAT ( "Returning -top + 2");
   return -work.top + 2;
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
    wxSize mySize;
    mySize = CalcSizeFromPage(wxSize(0,0));
    // std::cout << "mySize.y " << mySize.y;
-#ifdef __WXMAC__
+#ifdef CRY_OSMAC
    return 0;
 #else
    return mySize.y;
@@ -180,7 +183,7 @@ int CxTab::GetTabsHeight()
 
 int CxTab::GetTabsExtraVSpace()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
   CRect work(0,0,0,0);
   AdjustRect(TRUE,&work);
 //  LOGSTAT ( "CxTab::GetTabsExtraVSpace work t,b,l,r ="
@@ -191,12 +194,12 @@ int CxTab::GetTabsExtraVSpace()
 //  LOGSTAT ( "Returning bottom + 10");
   return work.bottom + 10; //Good space at bottom.
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
   return 30;
 #endif
 }
 
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
 void CxTab::OnSelChange(NMHDR* pNMHDR, LRESULT* pResult)
 {
     int nTab = GetCurSel();
@@ -205,7 +208,7 @@ void CxTab::OnSelChange(NMHDR* pNMHDR, LRESULT* pResult)
 }
 #endif
 
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
 void CxTab::LetGoOfTabs()
 {
   Show(false);
@@ -222,10 +225,10 @@ void CxTab::LetGoOfTabs()
 
 void CxTab::RedrawTabs()
 {
-#ifdef __CR_WIN__
+#ifdef CRY_USEMFC
  Invalidate();
 #endif
-#ifdef __BOTHWX__
+#ifdef CRY_USEWX
  Refresh();
 #endif
 

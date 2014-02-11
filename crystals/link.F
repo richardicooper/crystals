@@ -549,36 +549,7 @@ C
      2
 C--WRITE THE PARAMETER FILE TYPE
         WRITE ( NCFPU1 ,  '(''LIST5'')' )
-#if defined(_PPC_)
-      WRITE ( NCFPU1 ,  '(''CRUSE:CAMERON.L5I'')' )
-#endif
-#if defined(_VAX_)
       WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_DOS_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_DVF_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_LIN_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_GIL_)  || defined(_MAC_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_WXS_) || defined(_INW_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_GID_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_H_P_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
-#if defined(_CYB_)
-      WRITE ( NCFPU1 ,  '(''CAMERON.L5I'')' )
-#endif
       WRITE ( NCFPU1 ,' ( ''$SYMM'' )' )
       DO 26190 IND1=L2P,M2P,3
         DO 26180 IND2=L2,M2,MD2
@@ -1785,7 +1756,7 @@ C----- CAMERON - 2 FILES TO CLOSE AND START PROGRAM
       I = KFLCLS(NCFPU1)
       I = KFLCLS(NCFPU2)
 C - Only GID, GIL and DOS support Cameron's graphics.
-#if !defined(_DOS_) && !defined(_GID_) && !defined(_GIL_) && !defined(_WXS_)  && !defined(_MAC_) && !defined(_INW_)
+#ifdef CRY_NOGUI
         GOTO 9000 !Skip this Cameron part.
 
 C -- START CAMERON - ONLY TWO ELEMENT OF STORE (CURRENTLY A DUMMY) USED
@@ -1795,20 +1766,14 @@ C      IF (ISSTML .EQ. 4) THEN
 C - Only GID needs funny text strings to initialise the graphics.
 C - Could move these to ZCAMER.
 
-#if defined(_GID_) || defined(_GIL_) || defined(_WXS_)  || defined(_MAC_) || defined(_INW_)
+#ifdef CRY_GUI
         WRITE(CHARTC,'(A)') '^^CH CHART _CAMERONCHART'
         CALL ZMORE(CHARTC,0)
         WRITE(CHARTC,'(A)') '^^CH ATTACH _CAMERONVIEW'
         CALL ZMORE(CHARTC,0)
         WRITE(CHARTC,'(A)') '^^CW'
         CALL ZMORE(CHARTC,0)
-#endif
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
         CALL ZCAMER ( 1, 0 , 0 , 0)
-#endif
-#if defined(_DOS_) || defined(_WXS_) || defined(_INW_)
-        CALL ZCAMER ( 1, 0 , 0 , 0)
-
 #endif
 8025  CONTINUE
         IF (LCLOSE) THEN
@@ -1817,10 +1782,7 @@ C - Could move these to ZCAMER.
         IIIIIN = 1
         ISTAT = KRDREC(IIIIIN)
         WRITE(CHRBUF,'(256A1)')LCMAGE
-#if defined(_GID_) || defined(_GIL_)  || defined(_MAC_)
-         CALL ZCONTR
-#endif
-#if defined(_DOS_) || defined(_WXS_)|| defined(_INW_)
+#ifdef CRY_GUI
          CALL ZCONTR
 #endif
       GOTO 8025
@@ -1862,9 +1824,6 @@ C
 C
 9900  CONTINUE
 C -- ERRORS DETECTED
-#if defined(_PPC_)
-      CALL stcrys
-#endif
       I = KFLCLS(NCFPU1)
       I = KFLCLS(NCFPU2)
       CALL XERHND ( IERWRN )
