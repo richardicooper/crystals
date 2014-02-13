@@ -355,7 +355,7 @@ C   9.FUNCTION      10.U(IJ)'S       11.TERM          12.EQUATE
 C  13.PLANAR        14.SUM           15.FORM          16.AVERAGE
 C  17.LIMIT         18.ENERGY        19.ORIGIN        20.REM
 C  21.SAME          22.DELU          23.SIMU          24.A-VIB
-C  25.A-U(IJ)'S     26. A-DIST
+C  25.A-U(IJ)'S     26. A-DIST       27.UXZBAR        28.UYZBAR
 C
 C----- ISTORE (LCG+1) OPERATIONS 
 c      Note that some correspond to several MG values.
@@ -364,7 +364,9 @@ C      5  diff D    6  ANGLE     7  mean A   8  diff D
 C      9  VIBRATION 10 EXECUTION 11 NOLIST   12 UIJ
 C      13 EQUATE    14 PLANAR    15 SUM      16 FORM
 C      17 AVERAGE   18 LIMIT     19 ENERGY   20 ORIGIN
+C Hmmm.
 C      21 REM       22 SAME      23 DELU     24 SIMU 
+C      21 UXZBAR    22 UYZBAR
 C
       INCLUDE 'ICOM05.INC'
       INCLUDE 'ICOM12.INC'
@@ -485,7 +487,7 @@ c----- indicate a normal directive
 C--JUMP ON THE FUNCTION OF THE CARD
       GOTO(1300,1350,1500,1800,1850,2050,2100,2150,2200,2250,
      2     2300,2450,4050,4550,5400,5650,5660,7000,7200,1150,
-     3     1810,1810,1810,1851,2251,1510, 1250)MG
+     3     1810,1810,1810,1851,2251,1510,2258,2259,1250)MG
 1250  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -571,7 +573,7 @@ C
       ELSE IF (MG .EQ. 23) THEN
             IDJW = 3
       ELSE
-      WRITE(CMON,'(A)') 'MG MIS-SET'
+           WRITE(CMON,'(A)') 'MG MIS-SET'
            CALL XPRVDU(NCVDU,1,0)
       ENDIF
         DISTW = 0.01
@@ -1192,6 +1194,21 @@ C--'A-U(IJ)' RESTRAINT
       K=1
       L=6
       M=8
+      GOTO 1900
+
+C--'UXZBAR' RESTRAINT
+2258  CONTINUE
+      ISTORE(LCG+1)=21
+      K=1    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
+C--'UYZBAR' RESTRAINT
+2259  CONTINUE
+      ISTORE(LCG+1)=22
+      K=1    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
       GOTO 1900
 C
 C--'ABORT' CARD  -  RESET THE ABORTION LIMIT FOR 'EQUATE'

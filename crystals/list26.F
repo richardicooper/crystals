@@ -288,6 +288,7 @@ C      9  VIBRATION 10 EXECUTION 11 NOLIST   12 UIJ
 C      13 EQUATE    14 PLANAR    15 SUM      16 FORM
 C      17 AVERAGE   18 LIMIT     19 ENERGY   20 ORIGIN
 C
+C      21 UXZBAR    22 UYZBAR
 C--
 C
       CHARACTER *24 CTEXT
@@ -408,7 +409,7 @@ C--SET THE CONVERSION FACTOR
 1200  CONTINUE
       CONV=1.
       GOTO(1300,1350,1550,1750,1850,1950,2100,2150,2200,2350,2400,2450,
-     2 1050,4000,4300,1050,4400,4370,1710, 5000,1250) ,I
+     2 1050,4000,4300,1050,4400,4370,1710, 5000,5010,5020,1250) ,I
 1250  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -569,6 +570,54 @@ C--'VIBRATION' RESTRAINT
       N=2
       GOTO 2500
 C
+C--'UXZBAR' RESTRAINT
+5010  CONTINUE
+C To be replaced with JA routine:
+c      CALL XCVC(IASYM)
+      WRITE(*,*)'Hello UXZBar'
+      IF (ISSPRT .EQ. 0) THEN
+        WRITE(NCWU,5011)A,(MSD(M),M=1,3),B,C
+      ENDIF
+5011  FORMAT(/1X,F4.0,'UXZBAR - Restrain the covariance perp. to'
+     2 ,2A4,A1,
+     2 ' along a bond to be',/6x,F9.5,
+     3 '  angstrom squared, with an E.S.D. of',F9.5)
+      WRITE(CMON,5012)NINT(A+1), 'Covariance difference', B,C
+      CALL XPRVDU(NCVDU, 1,0)
+5012  FORMAT(I5, 1X, A, '. ', 'Target ',F7.4, ' esd ', F7.4)
+
+      IF (ISSPRT .EQ. 0) THEN
+         WRITE(NCWU,5013)(NUMB(N),(MSD(M),M=1,3),N=2,3)
+      ENDIF
+5013  FORMAT(/2X,2(10X,4HAtom,2X,A1,4X,15HS(I) L TX TY TZ,3X,2A4,A1),
+     2 4X,5HDelta,A1,4X,8HCoord.'S)
+      N=2
+      GOTO 2500
+C
+C--'UYZBAR' RESTRAINT
+5020  CONTINUE
+C To be replaced with JA routine:
+c      CALL XCVC(IASYM)
+      WRITE(*,*)'Hello UYZBar'
+      IF (ISSPRT .EQ. 0) THEN
+        WRITE(NCWU,5021)A,(MSD(M),M=1,3),B,C
+      ENDIF
+5021  FORMAT(/1X,F4.0,'UYZBAR - Restrain the covariance perp. to'
+     2 ,2A4,A1,
+     2 ' along a bond to be',/6x,F9.5,
+     3 '  angstrom squared, with an E.S.D. of',F9.5)
+      WRITE(CMON,5022)NINT(A+1), 'Covariance difference', B,C
+      CALL XPRVDU(NCVDU, 1,0)
+5022  FORMAT(I5, 1X, A, '. ', 'Target ',F7.4, ' esd ', F7.4)
+
+      IF (ISSPRT .EQ. 0) THEN
+         WRITE(NCWU,5023)(NUMB(N),(MSD(M),M=1,3),N=2,3)
+      ENDIF
+5023  FORMAT(/2X,2(10X,4HAtom,2X,A1,4X,15HS(I) L TX TY TZ,3X,2A4,A1),
+     2 4X,5HDelta,A1,4X,8HCoord.'S)
+      N=2
+      GOTO 2500
+C
 C--'EXECUTION LISTING'
 2350  CONTINUE
       ISTAT2=1
@@ -639,7 +688,7 @@ C--CALCULATE THE 'DELTA' AND 'CALCULATED' VALUES
       A1(1)=B-A1(2)
 C--BRANCH ON THE TYPE OF RESTRAINTS
       GOTO(1050,1050,2850,3000,2850,3050,3150,3050,3200,1050,1050,3300,
-     2 1050,4150,1050,1050,4550,4540,2850,1050, 2800) ,I
+     2 1050,4150,1050,1050,4550,4540,2850,1050,3280,3290, 2800) ,I
 2800  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -730,6 +779,54 @@ C--CALCULATE THE MEAN
       A1(1)=0.5*(A1(1)+A1(2)+B)
       A1(2)=A1(3)
       GOTO 2950
+
+C--UXZBAR RESTRAINTS PRINT
+3280  CONTINUE
+      A1(3)=A1(2)
+      A1(2)=2.*SQRT(STORE(L22PD+3))
+      A1(1)=0.5*(A1(2)-A1(3))
+      A1(2)=A1(2)-A1(1)-B
+      IF (ISSPRT .EQ. 0) THEN
+      WRITE(NCWU,3250)KF,STORE(JA+2),ISTORE(JA+3),(ISTORE(M),M=JD,JE),
+     2 A1(1),STORE(JB+2),ISTORE(JB+3),(ISTORE(M),M=JF,JG),(A1(M),M=2,3)
+      ENDIF
+      IF ( (IMON .GT. 0 ) .OR. (ABS(A1(3)) .GE. C )) THEN
+c         WRITE(NCAWU,3251)KF,STORE(JA+2),ISTORE(JA+3),A1(1),
+c     2   STORE(JB+2),ISTORE(JB+3),A1(2),A1(3)
+         IF ((IMON .GE. 1) .AND. (ABS(A1(3)) .GE. C )) THEN
+         WRITE(CMON, 3251)KF,STORE(JA+2),ISTORE(JA+3),A1(1),
+     2   STORE(JB+2),ISTORE(JB+3),A1(2),A1(3)
+         CALL XPRVDU(NCVDU, 1,0)
+         ENDIF
+      ENDIF
+C--CALCULATE THE MEAN
+      A1(1)=0.5*(A1(1)+A1(2)+B)
+      A1(2)=A1(3)
+      GOTO 2950
+CC--VIBRATION RESTRAINTS PRINT
+3290  CONTINUE
+      A1(3)=A1(2)
+      A1(2)=2.*SQRT(STORE(L22PD+3))
+      A1(1)=0.5*(A1(2)-A1(3))
+      A1(2)=A1(2)-A1(1)-B
+      IF (ISSPRT .EQ. 0) THEN
+      WRITE(NCWU,3250)KF,STORE(JA+2),ISTORE(JA+3),(ISTORE(M),M=JD,JE),
+     2 A1(1),STORE(JB+2),ISTORE(JB+3),(ISTORE(M),M=JF,JG),(A1(M),M=2,3)
+      ENDIF
+      IF ( (IMON .GT. 0 ) .OR. (ABS(A1(3)) .GE. C )) THEN
+c         WRITE(NCAWU,3251)KF,STORE(JA+2),ISTORE(JA+3),A1(1),
+c     2   STORE(JB+2),ISTORE(JB+3),A1(2),A1(3)
+         IF ((IMON .GE. 1) .AND. (ABS(A1(3)) .GE. C )) THEN
+         WRITE(CMON, 3251)KF,STORE(JA+2),ISTORE(JA+3),A1(1),
+     2   STORE(JB+2),ISTORE(JB+3),A1(2),A1(3)
+         CALL XPRVDU(NCVDU, 1,0)
+         ENDIF
+      ENDIF
+C--CALCULATE THE MEAN
+      A1(1)=0.5*(A1(1)+A1(2)+B)
+      A1(2)=A1(3)
+      GOTO 2950
+C	  
 C
 C--U(IJ) RESTRAINT
 3300  CONTINUE
