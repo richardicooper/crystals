@@ -1666,7 +1666,7 @@ C--CHECK IF THIS THE FIRST OR SECOND ATOM                               CVC01090
       JX=JV                                                             CVC01130
       DO 1550 J=1,6                                                     CVC01140
 c      A1(J)=-A1(J)                                                      CVC01150
-      a1(j)=a1(j+6)*e *-1.                                                   CVC00920
+      a1(j)=-a1(j+6)*e                                                    CVC00920
 1550  CONTINUE                                                          CVC01160
       I=I-1                                                             CVC01170
       GOTO 1350                                                         CVC01180
@@ -1766,7 +1766,7 @@ C--SET UP THE ADDRESSES OF THE ATOMS
       JB=ISTORE(JA)             ! Address of next parameter block                                        
       JP=ISTORE(JA+6)           ! Address of first parameter for atom 1                                        
       JV=ISTORE(JB+6)           ! Address of first parameter for atom 2                                        
-C--SET UP THE ADDRESSES OF THE U(IJ)'S (skip over the XYZ parameter entries to get to U11)                                  
+C--SET UP THE ADDRESSES OF THE U(IJ)'S (skip over the X,Y & Z parameter entries to get to U11)                                  
       DO I=1,3 
          JP=ISTORE(JP) 
          JV=ISTORE(JV) 
@@ -1814,75 +1814,74 @@ C Here is the interatomic vector in crystal fractions:
 	  
       CALL XMLTTM(STORE(L1O1),DIFF_VEC,ORTD(1),3,3,1)  ! Multiply diffvec by orthogonalisation matrix
 
-	  
-      A1(7)= 0.0    ! dR/dU11
-      A1(8)=G*G     ! dR/dU12
-      A1(9)=H*H                                                          CVC00840
-      A1(10)=2.*G*H                                                      CVC00850
-      A1(11)=2.*F*H                                                      CVC00860
-      A1(12)=2.*F*G                                                      CVC00870
-C--CALCULATE THE SCALING CONSTANT FOR THE COMPONENTS SQUARED            CVC00880
-      E=1./(4.*D*D)                                                      CVC00890
-C--CALCULATE THE DERIVATIVES FOR THE U(IJ)                              CVC00900
-      DO I=1,6                                                           CVC00910
-         A1(I)=A1(I+6)*E                                                   CVC00920
-      END DO
-      JO=JA                                                              CVC00940
-      JX=JP                                                             CVC00950
-      I=1                                                               CVC00960
+C Derivatives go here. These values (iaxis*n) are currently just used for testing.
 
-C--STORE THE DERIVATIVES                                                CVC00970
-1350  CONTINUE                                                          CVC00980
-C--CHECK IF THIS ATOM IS ISO AND NOT ANISO                              CVC00990
-      IF(ISTORE(JO+5).EQ.4) THEN
-C--'ISO' ATOM                                                           CVC01010
-         STORE(JX+2)=STORE(JX+2)+A1(1)+A1(2)+A1(3)+A1(4)*
-     2   STORE(L1C)+A1(5)*STORE(L1C+1)+A1(6)*STORE(L1C+2)
-      ELSE
-C--'ANISO' ATOM                                                         CVC01060
-         if ((i .eq. 1).AND. (iasym .eq. 1)) then
-c           don't restrain first atom
-            do jy = 1,6
-              a1(jy) = 0.0
-            enddo
-         endif
-         CALL XADUIJ                                                       CVC01080
-      END IF
+      A1(7)=iaxis*1.0    ! dR/dU11
+      A1(8)=iaxis*2.0     ! dR/dU22
+      A1(9)=iaxis*3.0    ! dR/dU33
+      A1(10)=iaxis*4.0     ! dR/dU23           
+      A1(11)=iaxis*5.0     ! dR/dU13
+      A1(12)=iaxis*6.0     ! dR/dU12
+
+      JO=JA   
+      JX=JP   
+      I=1     
+
+C--STORE THE DERIVATIVES   
+1350  CONTINUE             ! Loop back here for second atom with I set to 0
+         IF(ISTORE(JO+5).EQ.4) THEN    ! This is an 'ISO' ATOM
+
+    	    STORE(JX+2)=STORE(JX+2)+A1(1)+A1(2)+A1(3)+A1(4)*
+     2                  STORE(L1C)+A1(5)*STORE(L1C+1)+A1(6)*STORE(L1C+2)
+
+         ELSE                          ! This is an 'ANISO' ATOM
+         
+		    if ((i .eq. 1).AND. (iasym .eq. 1)) then !This is an asymmetric restraint
+c                                                     don't restrain first atom
+               do jy = 1,6
+                  a1(jy) = 0.0
+               enddo
+            endif
+            CALL XADUIJ
+         END IF
+
 C--CHECK IF THIS THE FIRST OR SECOND ATOM                               CVC01090
-      IF(I.GE.1)THEN
-        JO=JB                                                         
-        JX=JV                                                         
-        DO  J=1,6                                                     
-           a1(j)=a1(j+6)*e *-1.                                                   
-        END DO
-        I=I-1                                                             CVC01170
-        GOTO 1350                                                         CVC01180
-	  END IF
+         IF(I.GE.1)THEN
+            JO=JB                                                         
+            JX=JV                                                         
+            DO  J=1,6                                                     
+               a1(j)= - a1(j+6) 
+            END DO
+            I=I-1                                                             CVC01170
+            GOTO 1350                                                         CVC01180
+	     END IF
 C--CALCULATE THE MEAN VALUE AND THE DIFFERENCE                          CVC01190
-      JC=ISTORE(JA+16)                                                  CVC01210
-      JD=ISTORE(JB+16)                                                  CVC01220
-      SUM=0.                                                            CVC01230
-      D=0.                                                              CVC01240
-      DO  I=1,6 
+         JC=ISTORE(JA+16)                                                  CVC01210
+         JD=ISTORE(JB+16)                                                  CVC01220
+         SUM=0.                                                            CVC01230
+         D=0.                                                              CVC01240
+
+C Here, you need to set D to be the computed value of the difference in the covariances
+C Note that DUMP is the target difference (and should usually be zero).
+C You need to set SUM to be the compute
+         DO  I=1,6 
 c      write(123,'(a,3f12.6)') 'Mean',  store(jc+14),store(jd+14)
 c      for the asymmetric restraint, should we NOT compute the mean?
-         SUM=SUM+(STORE(JC+14)+STORE(JD+14))*A1(I+6)                       CVC01260
-         A1(I)=STORE(JC+14)-STORE(JD+14)                                   CVC01270
-         D=D+A1(I)*A1(I+6)                                                 CVC01280
-         JC=JC+2                                                           CVC01290
-         JD=JD+2                                                           CVC01300
-      END DO
-      STORE(LCG+4)=0.5*(DUMP+SUM*E)                                     CVC01320
-      D=D*E                                                             CVC01330
-      STORE(L22PD+2)=DUMP-D                                             CVC01340
+            SUM=SUM+(STORE(JC+14)+STORE(JD+14))*A1(I+6)                       CVC01260
+            A1(I)=STORE(JC+14)-STORE(JD+14)                                   CVC01270
+            D=D+A1(I)*A1(I+6)                                                 CVC01280
+            JC=JC+2                                                           CVC01290
+            JD=JD+2                                                           CVC01300
+         END DO
+         STORE(LCG+4)=0.5*(DUMP+SUM)                                       CVC01320
+         STORE(L22PD+2)=DUMP-D ! Difference between restraint target (DUMP) and computed from current parameters (D)
+         MCA=JA                                                            CVC01500
+         STORE(L22PD+1) = STORE(LCG+3)                                     CVC01510
+         CALL XFMPDQ                                                       CVC01520
+         JA=ISTORE(JB)                                                     CVC01530
 
-      MCA=JA                                                            CVC01500
-      STORE(L22PD+1) = STORE(LCG+3)                                     CVC01510
-      CALL XFMPDQ                                                       CVC01520
-      JA=ISTORE(JB)                                                     CVC01530
-      IF(JA)1750,1750,1000                                              CVC01540
-1750  CONTINUE                                                          CVC01550
-cdjwapr99}
+      IF(JA .GT. 0)GOTO 1000
+
       RETURN
       END
 	  
