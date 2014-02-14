@@ -573,19 +573,17 @@ C
 C--'UXZBAR' RESTRAINT
 5010  CONTINUE
 C To be replaced with JA routine:
-c      CALL XCVC(IASYM)
+      CALL XCVCX(1,IASYM)
       WRITE(*,*)'Hello UXZBar'
       IF (ISSPRT .EQ. 0) THEN
-        WRITE(NCWU,5011)A,(MSD(M),M=1,3),B,C
+        WRITE(NCWU,5011)A,B,C
       ENDIF
-5011  FORMAT(/1X,F4.0,'UXZBAR - Restrain the covariance perp. to'
-     2 ,2A4,A1,
-     2 ' along a bond to be',/6x,F9.5,
-     3 '  angstrom squared, with an E.S.D. of',F9.5)
-      WRITE(CMON,5012)NINT(A+1), 'Covariance difference', B,C
+5011  FORMAT(/1X,F4.0,
+     1 'UXZBAR - Restrain the covariance perp. to X and bond to be '
+     2 /6x,F9.5,'  angstrom squared, with an E.S.D. of',F9.5)
+      WRITE(CMON,5012)NINT(A+1), 'Covariance difference XZ ', B,C
       CALL XPRVDU(NCVDU, 1,0)
 5012  FORMAT(I5, 1X, A, '. ', 'Target ',F7.4, ' esd ', F7.4)
-
       IF (ISSPRT .EQ. 0) THEN
          WRITE(NCWU,5013)(NUMB(N),(MSD(M),M=1,3),N=2,3)
       ENDIF
@@ -597,16 +595,15 @@ C
 C--'UYZBAR' RESTRAINT
 5020  CONTINUE
 C To be replaced with JA routine:
-c      CALL XCVC(IASYM)
+      CALL XCVCX(2,IASYM)
       WRITE(*,*)'Hello UYZBar'
       IF (ISSPRT .EQ. 0) THEN
-        WRITE(NCWU,5021)A,(MSD(M),M=1,3),B,C
+        WRITE(NCWU,5021)A,B,C
       ENDIF
-5021  FORMAT(/1X,F4.0,'UYZBAR - Restrain the covariance perp. to'
-     2 ,2A4,A1,
-     2 ' along a bond to be',/6x,F9.5,
-     3 '  angstrom squared, with an E.S.D. of',F9.5)
-      WRITE(CMON,5022)NINT(A+1), 'Covariance difference', B,C
+5021  FORMAT(/1X,F4.0,
+     1'UYZBAR - Restrain the covariance perp to UXZBAR and bond to be '
+     2 /6x,F9.5,'  angstrom squared, with an E.S.D. of',F9.5)
+      WRITE(CMON,5022)NINT(A+1), 'Covariance difference YZ', B,C
       CALL XPRVDU(NCVDU, 1,0)
 5022  FORMAT(I5, 1X, A, '. ', 'Target ',F7.4, ' esd ', F7.4)
 
@@ -803,7 +800,7 @@ C--CALCULATE THE MEAN
       A1(1)=0.5*(A1(1)+A1(2)+B)
       A1(2)=A1(3)
       GOTO 2950
-CC--VIBRATION RESTRAINTS PRINT
+CC--UYZBAR RESTRAINTS PRINT
 3290  CONTINUE
       A1(3)=A1(2)
       A1(2)=2.*SQRT(STORE(L22PD+3))
@@ -1176,7 +1173,7 @@ cdjwsep2011
        iasym = 0
       endif
       GOTO(1150,1200,1250,1300,1350,1400,1450,1500,1550,1600,1650,1700,
-     2 1950,2000,2050,2100,2150,2200,2250,2055,1100) ,I
+     2 1950,2000,2050,2100,2150,2200,2250,2055,1560,1570,1100) ,I
 1100  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -1224,6 +1221,16 @@ C
 C--'VIBRATION' RESTRAINT
 1550  CONTINUE
       CALL XCVC(iasym)
+      GOTO 1000
+C
+C--'UXZBAR' RESTRAINT
+1560  CONTINUE
+      CALL XCVCX(1,iasym)
+      GOTO 1000
+C
+C--'UYZBAR' RESTRAINT
+1570  CONTINUE
+      CALL XCVCX(2,iasym)
       GOTO 1000
 C
 C--'EXECUTION LISTING'
@@ -1710,6 +1717,176 @@ C--CALCULATE THE DERIVATIVES FOR THE POSITIONAL COORDS.                 CVC01350
 cdjwapr99}
       RETURN
       END
+C
+CODE FOR XCVCX
+      SUBROUTINE XCVCX(iaxis,iasym)
+C--CALCULATE VIBRATION RESTRAINTS
+C
+C      IAXIS = 1 FOR XZ COVARIANCE
+C      IAXIS = 2 FOR YZ COVARIANCE
+C
+C      IASYM = 1 FOR ASYMMETRIC OTHERWISE 0
+C
+C--THE VARIABLES IN 'XWORK' ARE USED AS FOLLOWS :
+C
+C  P  DU(B)/DU(22)
+C  .
+C  .
+C  T  DU(B)/DU(12)
+C
+C--SUBSEQUENTLY O TO T ARE USED FOR THE DIFFERENCES BETWEEN THE
+C  THE TWO VALUES OF EACH VIBRATION PARAMETER
+C
+C--
+      INCLUDE 'ISTORE.INC'
+C
+      DIMENSION A1(12)
+	  DIMENSION DIFF_VEC(3)
+	  DIMENSION ORTD(3)
+C
+      INCLUDE 'STORE.INC'
+      INCLUDE 'XWORK.INC'
+      INCLUDE 'XWORKA.INC'
+      INCLUDE 'XCNTRL.INC'
+      INCLUDE 'XLST22.INC'
+      INCLUDE 'XCONST.INC'
+      INCLUDE 'XLST01.INC'
+      INCLUDE 'XAPK.INC'
+C
+      INCLUDE 'QSTORE.INC'
+C
+      EQUIVALENCE (O,A1(1))    ! Note well
+C
+C--SET UP A FEW CONSTANTS                                        
+      DUMP=STORE(LCG+4)   ! The 'observed value' of the restraint
+      JA=LCA              ! Address of first parameter block header                                      
+      NCA=2                                                             
+C--SET UP THE ADDRESSES OF THE ATOMS                                    
+1000  CONTINUE                                                          
+      JB=ISTORE(JA)             ! Address of next parameter block                                        
+      JP=ISTORE(JA+6)           ! Address of first parameter for atom 1                                        
+      JV=ISTORE(JB+6)           ! Address of first parameter for atom 2                                        
+C--SET UP THE ADDRESSES OF THE U(IJ)'S (skip over the XYZ parameter entries to get to U11)                                  
+      DO I=1,3 
+         JP=ISTORE(JP) 
+         JV=ISTORE(JV) 
+      END DO
+C--CHECK THAT BOTH ATOMS ARE ANISO AND IF NOT MODIFY ACCORDINGLY        
+      JX=JP                                                             
+      JC=JA                                                             
+      DO I=1,2 
+         JD=ISTORE(JC+16)   !Address of atom in L5
+C--CHECK IF THE ATOM IS ANISO                                           
+         IF(ABS(STORE(JD+6)) .gt. zero) THEN
+C--'ISO' ATOM  -  MODIFY THE ENTRY IN THE COORDINATE SECTION            
+            ISTORE(JC+5)=4         ! Reduce the number of restrained parameters to x,y,z,iso
+            ISTORE(JX)=-1000000    ! Remove link to next parameter (U22- there isn't one)                                     
+            ISTORE(JX+1)=8         ! Where they start 
+C--SET THE EQUIVALENT ANISO TEMPERATURE FACTORS FOR THE ATOM
+            JE=JD                                                          
+            JF=L1C+2                                                       
+            DO J=L1C,JF                                                  
+               STORE(JE+14)=STORE(JD+14)
+               STORE(JE+20)=STORE(JD+14)*STORE(J)                        
+               JE=JE+2                                                   
+            END DO
+            STORE(JD+6)=0.
+         END IF
+C--PASS ONTO THE SECOND OF THE PAIR                                     
+         JX=JV                                                          
+         JC=JB                                                          
+      END DO
+
+C--CALCULATE THE INTERNUCLEAR DISTANCE                                  
+      JO=JA  
+      JS=JB  
+      JQ=ISTORE(JO+16)
+      JU=ISTORE(JS+16)
+
+C Here is the interatomic vector in crystal fractions:	  
+      A=STORE(JQ+8)-STORE(JU+8)
+      B=STORE(JQ+10)-STORE(JU+10)
+      C=STORE(JQ+12)-STORE(JU+12)
+
+	  DIFF_VEC(1) = A
+	  DIFF_VEC(2) = B
+	  DIFF_VEC(3) = C
+	  
+      CALL XMLTTM(STORE(L1O1),DIFF_VEC,ORTD(1),3,3,1)  ! Multiply diffvec by orthogonalisation matrix
+
+	  
+      A1(7)= 0.0    ! dR/dU11
+      A1(8)=G*G     ! dR/dU12
+      A1(9)=H*H                                                          CVC00840
+      A1(10)=2.*G*H                                                      CVC00850
+      A1(11)=2.*F*H                                                      CVC00860
+      A1(12)=2.*F*G                                                      CVC00870
+C--CALCULATE THE SCALING CONSTANT FOR THE COMPONENTS SQUARED            CVC00880
+      E=1./(4.*D*D)                                                      CVC00890
+C--CALCULATE THE DERIVATIVES FOR THE U(IJ)                              CVC00900
+      DO I=1,6                                                           CVC00910
+         A1(I)=A1(I+6)*E                                                   CVC00920
+      END DO
+      JO=JA                                                              CVC00940
+      JX=JP                                                             CVC00950
+      I=1                                                               CVC00960
+
+C--STORE THE DERIVATIVES                                                CVC00970
+1350  CONTINUE                                                          CVC00980
+C--CHECK IF THIS ATOM IS ISO AND NOT ANISO                              CVC00990
+      IF(ISTORE(JO+5).EQ.4) THEN
+C--'ISO' ATOM                                                           CVC01010
+         STORE(JX+2)=STORE(JX+2)+A1(1)+A1(2)+A1(3)+A1(4)*
+     2   STORE(L1C)+A1(5)*STORE(L1C+1)+A1(6)*STORE(L1C+2)
+      ELSE
+C--'ANISO' ATOM                                                         CVC01060
+         if ((i .eq. 1).AND. (iasym .eq. 1)) then
+c           don't restrain first atom
+            do jy = 1,6
+              a1(jy) = 0.0
+            enddo
+         endif
+         CALL XADUIJ                                                       CVC01080
+      END IF
+C--CHECK IF THIS THE FIRST OR SECOND ATOM                               CVC01090
+      IF(I.GE.1)THEN
+        JO=JB                                                         
+        JX=JV                                                         
+        DO  J=1,6                                                     
+           a1(j)=a1(j+6)*e *-1.                                                   
+        END DO
+        I=I-1                                                             CVC01170
+        GOTO 1350                                                         CVC01180
+	  END IF
+C--CALCULATE THE MEAN VALUE AND THE DIFFERENCE                          CVC01190
+      JC=ISTORE(JA+16)                                                  CVC01210
+      JD=ISTORE(JB+16)                                                  CVC01220
+      SUM=0.                                                            CVC01230
+      D=0.                                                              CVC01240
+      DO  I=1,6 
+c      write(123,'(a,3f12.6)') 'Mean',  store(jc+14),store(jd+14)
+c      for the asymmetric restraint, should we NOT compute the mean?
+         SUM=SUM+(STORE(JC+14)+STORE(JD+14))*A1(I+6)                       CVC01260
+         A1(I)=STORE(JC+14)-STORE(JD+14)                                   CVC01270
+         D=D+A1(I)*A1(I+6)                                                 CVC01280
+         JC=JC+2                                                           CVC01290
+         JD=JD+2                                                           CVC01300
+      END DO
+      STORE(LCG+4)=0.5*(DUMP+SUM*E)                                     CVC01320
+      D=D*E                                                             CVC01330
+      STORE(L22PD+2)=DUMP-D                                             CVC01340
+
+      MCA=JA                                                            CVC01500
+      STORE(L22PD+1) = STORE(LCG+3)                                     CVC01510
+      CALL XFMPDQ                                                       CVC01520
+      JA=ISTORE(JB)                                                     CVC01530
+      IF(JA)1750,1750,1000                                              CVC01540
+1750  CONTINUE                                                          CVC01550
+cdjwapr99}
+      RETURN
+      END
+	  
+	  
 C
 CODE FOR XCMDC
       SUBROUTINE XCMDC(IASYM)
@@ -3178,6 +3355,7 @@ C--FIND THE LENGTH OF THE NEXT ENTRY
         END IF
 
       GOTO 1200
+
 
 
 C--OUTPUT THE NEW MATRIX
