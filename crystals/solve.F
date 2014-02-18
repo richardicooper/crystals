@@ -2297,6 +2297,7 @@ C                      if (bdjw .ge. .7) then
 cjan07              store(jo)=djwsin*0.33
 cjan07              call rstmsg(idjw,store(m5+1),js2,bdjw, store(jo),a)
 C                      endif
+                                                
                        case(5,6,7)
 c  xyz - delta max = .2A
 C                       if (bdjw .ge. .2) then

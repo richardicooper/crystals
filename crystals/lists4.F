@@ -1208,18 +1208,14 @@ C--COMPUTE THE REAL PART
          ! Mn 6572.000      -4.955494       3.925735
          ! O  6600.000      6.8636276E-02  4.8890673E-02
 
-          If(atom_type=='MN  ') then
-              formfactors(1, (jz-1)*MD3TR+1) = RPART-4.955494
+          If(atom_type=='MNP2 ') then
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.33
 C--COMPUTE THE IMAGINARY PART
-              formfactors(2, (jz-1)*MD3TI+1)=3.925735
-          else If(atom_type=='CO  ') then
-              formfactors(1, (jz-1)*MD3TR+1) = RPART-1.711848
+              formfactors(2, (jz-1)*MD3TI+1)=0.72
+          else If(atom_type=='MNP3 ') then
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.33
 C--COMPUTE THE IMAGINARY PART
-              formfactors(2, (jz-1)*MD3TI+1)= 0.6283829 
-          else If(atom_type=='O   ') then
-              formfactors(1, (jz-1)*MD3TR+1) = RPART+6.8636276E-02
-C--COMPUTE THE IMAGINARY PART
-              formfactors(2, (jz-1)*MD3TI+1)=4.8890673E-02
+              formfactors(2, (jz-1)*MD3TI+1)= 0.72
           else
 C--COMPUTE THE REAL PART
               formfactors(1, (jz-1)*MD3TR+1) = RPART+STORE(M3+1)
@@ -1285,22 +1281,16 @@ C--COMPUTE THE REAL PART
          !Mn 6532.000      -6.735828      0.4651306 
          !Co 6500.000      -1.637342      0.6458722 
 
-
-          If(atom_type=='MN  ') then
+          If(atom_type=='MNP2 ') then
               ! 1.8987ang -6.735828      0.4651306
-              formfactors(1, (jz-1)*MD3TR+1) = RPART-6.735828
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.33
 C--COMPUTE THE IMAGINARY PART
-              formfactors(2, (jz-1)*MD3TI+1)=0.4651306
-          else If(atom_type=='CO  ') then
+              formfactors(2, (jz-1)*MD3TI+1)=0.72
+          else If(atom_type=='MNP3 ') then
               ! 1.8987ang -6.735828      0.4651306
-              formfactors(1, (jz-1)*MD3TR+1) = RPART-1.637342
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.33
 C--COMPUTE THE IMAGINARY PART
-              formfactors(2, (jz-1)*MD3TI+1)=0.6458722
-          else If(atom_type=='O   ') then
-              ! 1.8987ang -6.735828      0.4651306
-              formfactors(1, (jz-1)*MD3TR+1) = RPART+7.0322260E-02
-C--COMPUTE THE IMAGINARY PART
-              formfactors(2, (jz-1)*MD3TI+1)=5.0461698E-02
+              formfactors(2, (jz-1)*MD3TI+1)=3.96
           else
 C--COMPUTE THE REAL PART
               formfactors(1, (jz-1)*MD3TR+1) = RPART+STORE(M3+1)

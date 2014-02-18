@@ -28,15 +28,15 @@ else
     CPPFLAGS = -s -fexceptions -I/usr/local/include `wx-config-2.9 --cppflags` -D_GNUF77_
     CFLAGS = -s
 
-    CXX = g++48
-    CC = gcc48
-    LD = gfortran48
-    LD77 = gfortran48
-    F77 = gfortran48
-    F77FLAGS = -fno-realloc-lhs -fexceptions -std=legacy -fopenmp -mfpmath=sse -mavx -ftree-vectorize -fno-sign-zero -I../crystals/ -D _$(COMPCODE)_ -D _HOL_ -D _GNUF77_ 
-    F90FLAGS = -fno-realloc-lhs -fcheck=all -fexceptions -pedantic -fopenmp -mfpmath=sse -mavx -fno-sign-zero -ftree-vectorize  -I../crystals/ -D _$(COMPCODE)_ 
-    LDFLAGS = -ggdb -fopenmp -lopenblaso 
-    OPT = -ggdb -O3
+    CXX = g++
+    CC = gcc
+    LD = gfortran
+    LD77 = gfortran
+    F77 = gfortran
+    F77FLAGS = -fbounds-check -fexceptions -std=legacy -mavx -ftree-vectorize -fno-sign-zero -I../crystals/ -D _$(COMPCODE)_ -D _HOL_ -D _GNUF77_ 
+    F90FLAGS = -fbounds-check -fexceptions -pedantic -mavx -fno-sign-zero -ftree-vectorize  -I../crystals/ -D _$(COMPCODE)_ 
+    LDFLAGS = -g  -lopenblaso 
+    OPT = -g -O2
 
     INSTALL=/usr/bin/install
 
