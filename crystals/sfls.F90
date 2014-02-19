@@ -3263,7 +3263,7 @@ do reflectionsdata_index=1, storechunk*tid
       ifNR=1
    END IF
 
-    if(ifnr>=0) then
+    if(ifnr>=0 .and. any(karimhkl/=0) ) then
         !print *, 's', reflectionsdata(:,reflectionsdata_index)
         !store(m6:m6+md6-1)=reflectionsdata(:,reflectionsdata_index)
 
@@ -3455,7 +3455,7 @@ designmatrix=0.0d0
     FCEXT=(reflectionsdata_HR(1+5,reflectionsdata_index)-reflectionsdata_LR(1+5,reflectionsdata_index)) / &
     &   (reflectionsdata_HR(1+5,reflectionsdata_index)+reflectionsdata_LR(1+5,reflectionsdata_index))
 !
-    FCEXS=FCEXT*SCALEG ! THE VALUE OF /FC/ AFTER SCALE FACTOR APPLIED
+    FCEXS=FCEXT!*SCALEG ! THE VALUE OF /FC/ AFTER SCALE FACTOR APPLIED
 !
 
 !    reflectionsdata(1+5,reflectionsdata_index)=FCEXT*SCALES ! STORE FC AND PHASE IN THE LIST 6 SLOTS
@@ -3502,7 +3502,7 @@ designmatrix=0.0d0
 !        !WDF=reflectionsdata(1+4,reflectionsdata_index) *DF
 !        S=1.0
 !    end if
-    wdf=df
+    wdf=100.0*df
     print *, 'wdf', wdf
     AMINF=AMINF+wDF**2!+WDF*WDF  ! COMPUTE THE MINIMISATION function
 

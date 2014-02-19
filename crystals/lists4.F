@@ -1216,6 +1216,16 @@ C--COMPUTE THE IMAGINARY PART
               formfactors(1, (jz-1)*MD3TR+1) = RPART+0.33
 C--COMPUTE THE IMAGINARY PART
               formfactors(2, (jz-1)*MD3TI+1)= 0.72
+          else If(atom_type=='C    ') then
+              ! 1.8987ang -6.735828      0.4651306
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.0033
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=0.0016
+          else If(atom_type=='O    ') then
+              ! 1.8987ang -6.735828      0.4651306
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.0106
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=0.006
           else
 C--COMPUTE THE REAL PART
               formfactors(1, (jz-1)*MD3TR+1) = RPART+STORE(M3+1)
@@ -1291,6 +1301,16 @@ C--COMPUTE THE IMAGINARY PART
               formfactors(1, (jz-1)*MD3TR+1) = RPART+0.33
 C--COMPUTE THE IMAGINARY PART
               formfactors(2, (jz-1)*MD3TI+1)=3.96
+          else If(atom_type=='C    ') then
+              ! 1.8987ang -6.735828      0.4651306
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.0033
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=0.0016
+          else If(atom_type=='O    ') then
+              ! 1.8987ang -6.735828      0.4651306
+              formfactors(1, (jz-1)*MD3TR+1) = RPART+0.0106
+C--COMPUTE THE IMAGINARY PART
+              formfactors(2, (jz-1)*MD3TI+1)=0.006
           else
 C--COMPUTE THE REAL PART
               formfactors(1, (jz-1)*MD3TR+1) = RPART+STORE(M3+1)
