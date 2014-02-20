@@ -2626,7 +2626,7 @@ double precision, dimension(:), allocatable :: temporaryderivatives
 integer myunit, io
 character(len=512) :: line
 integer, dimension(3) :: karimhkl
-real, dimension(5) :: karimintensity
+real, dimension(6) :: karimintensity
 real, dimension(16) ::  minimum_shared_HR, maximum_shared_HR
 real, dimension(16) ::  minimum_shared_LR, maximum_shared_LR
 real, dimension(16) ::  summation_hr, summationsq_HR, summation_LR, summationsq_LR
@@ -3258,7 +3258,7 @@ do reflectionsdata_index=1, storechunk*tid
       EXIT
    ELSE
       !read(line, '(3I4, 4F12.2, F12.6)') karimhkl, karimintensity
-      read(line, '(3I11, 2F11.4, F11.6)') karimhkl, karimintensity(1:3)
+      read(line, '(3I11, 2F11.4, 4F11.5)') karimhkl, karimintensity(1:6)
       !print *, karimhkl, karimintensity
       ifNR=1
    END IF
@@ -3270,14 +3270,14 @@ do reflectionsdata_index=1, storechunk*tid
         reflectionsdata_HR(:, reflectionsdata_index)=0.0
         reflectionsdata_HR(1:3, reflectionsdata_index)=karimhkl
         ! F refinement!! => sqrt
-        reflectionsdata_HR(4, reflectionsdata_index)=karimintensity(3)
-        reflectionsdata_HR(5, reflectionsdata_index)=sqrt(abs(karimintensity(3)))
+        reflectionsdata_HR(4, reflectionsdata_index)=karimintensity(5)
+        reflectionsdata_HR(5, reflectionsdata_index)=1000.0
         
         reflectionsdata_LR(:, reflectionsdata_index)=0.0
         reflectionsdata_LR(1:3, reflectionsdata_index)=karimhkl
         ! F refinement!! => sqrt
-        reflectionsdata_LR(4, reflectionsdata_index)=karimintensity(3)
-        reflectionsdata_LR(5, reflectionsdata_index)=sqrt(abs(karimintensity(3)))
+        reflectionsdata_LR(4, reflectionsdata_index)=karimintensity(5)
+        reflectionsdata_LR(5, reflectionsdata_index)=1000.0
 
         reflectionsdata_HR(md6+9,reflectionsdata_index)=1.0
         reflectionsdata_LR(md6+9,reflectionsdata_index)=1.0
@@ -3401,6 +3401,7 @@ designmatrix=0.0d0
     
     call XSFLSX(tc, sst, g2, reflectionsdata_HR(:,reflectionsdata_index), temporaryderivatives_HR, 1.0) !1.8871)
     call XSFLSX(tc, sst, g2, reflectionsdata_LR(:,reflectionsdata_index), temporaryderivatives_LR, 1.2) !1.8987)
+    !PRINT *, 'act, bct', reflectionsdata_HR(md6+1:md6+4,reflectionsdata_index)
 
     !print *, 'HR1', reflectionsdata_HR(md6+1:md6+6, reflectionsdata_index)
     !print *, 'LR2', reflectionsdata_LR(md6+1:md6+6,reflectionsdata_index)
@@ -3413,12 +3414,15 @@ designmatrix=0.0d0
     !print *, '0', designmatrix(1,1)
     call XAB2FC(reflectionsdata_HR(:,reflectionsdata_index), 1.0, &
     &   designmatrix_HR(:,reflectionsdata_index), temporaryderivatives_HR)  ! DERIVE THE TOTALS AGAINST /FC/ FROM THOSE W.R.T. A AND B
+    !print *, 'fc', reflectionsdata_HR(6,reflectionsdata_index)
+    
     call XAB2FC(reflectionsdata_LR(:,reflectionsdata_index), 1.0, &
     &   designmatrix_LR(:,reflectionsdata_index), temporaryderivatives_LR)  ! DERIVE THE TOTALS AGAINST /FC/ FROM THOSE W.R.T. A AND B
+    !print *, 'fc', reflectionsdata_LR(6,reflectionsdata_index)
     
     print *, 'hkl', reflectionsdata_HR(1:3,reflectionsdata_index)
-    print *, 'HR, LR calc',  &
-    &   reflectionsdata_HR(1+5,reflectionsdata_index), reflectionsdata_LR(1+5,reflectionsdata_index)
+    !print *, 'HR, LR calc',  &
+    !&   reflectionsdata_HR(1+5,reflectionsdata_index), reflectionsdata_LR(1+5,reflectionsdata_index)
     
     
     !print *, reflectionsdata_HR(1:3,reflectionsdata_index), &
@@ -3432,7 +3436,7 @@ designmatrix=0.0d0
         do i=1, ubound(designmatrix,1)
             ! (Hr-Lr)/(Hr+Lr)
             ! d[ (Hr-Lr)/(Hr+Lr) ] = (2Lr d[Hr] - 2Hr d[Lr])/(Hr+Lr)^2
-            designmatrix(i,reflectionsdata_index)= (&
+            designmatrix(i,reflectionsdata_index)= reflectionsdata_LR(5, reflectionsdata_index)*(&
             &   2.0d0 * reflectionsdata_LR(6,reflectionsdata_index) * designmatrix_HR(i,reflectionsdata_index) - &
             &   2.0d0 * reflectionsdata_HR(6,reflectionsdata_index) * designmatrix_LR(i,reflectionsdata_index) ) / &
             &   (reflectionsdata_HR(6,reflectionsdata_index) + reflectionsdata_LR(6,reflectionsdata_index))**2
@@ -3487,7 +3491,7 @@ designmatrix=0.0d0
     A=abs( reflectionsdata_HR(1+3,reflectionsdata_index) )     ! ADD IN THE COMPUTED VALUES OF /FC/ ETC., TO THE OVERALL TOTALS
     ! df = Fo - Fcexs
     DF=reflectionsdata_HR(1+3,reflectionsdata_index) - FCEXS
-    print *, 'df', df
+    !print *, 'df', df
     !WDF=reflectionsdata(1+4,reflectionsdata_index)*DF
     S=1.0
 !
@@ -3502,8 +3506,8 @@ designmatrix=0.0d0
 !        !WDF=reflectionsdata(1+4,reflectionsdata_index) *DF
 !        S=1.0
 !    end if
-    wdf=100.0*df
-    print *, 'wdf', wdf
+    wdf=reflectionsdata_LR(5, reflectionsdata_index)*df
+    !print *, 'wdf', wdf
     AMINF=AMINF+wDF**2!+WDF*WDF  ! COMPUTE THE MINIMISATION function
 
 ! If #CALC, then L28 was adjusted earlier. Call KALLOW again to get normal R
@@ -3643,7 +3647,7 @@ close(myunit)
 
 
 
-PRINT *, 'Minimum', aminf, aminf2
+PRINT *, 'Minimum', aminf, aminf2, aminf+aminf2
 
 
 ! Merge accumulation matrices
@@ -4758,11 +4762,14 @@ do LJY=1,N5
 !djwsep2010 extend to use dual wavelength anomalous scattering as appropriate 
     M3TR=1+ISTORE(M5A)*MD3TR  ! PICK UP THE FORM FACTORS FOR THIS ATOM
     M3TI=1+ISTORE(M5A)*MD3TI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 !
 ! focc   formfactor * site occ * chemical occ * difabs corection
 ! modify focc for other fc corrections 
 !
     FOCC = formfactors(1, M3TR) * STORE(M5A+2) * STORE(M5A+13) 
+    !print *, 'occ?', STORE(M5A+2), STORE(M5A+13) 
+    !print *, 'focc', focc
 
     FLAG=STORE(M5A+3)   ! PICK UP THE TYPE OF THIS ATOM
     if(NINT(FLAG) .EQ. 1) then  ! CHECK THE TEMPERAURE TYPE FOR THIS ATOM
@@ -5085,6 +5092,8 @@ bci=reflectiondata(MD6+4)
 
 ACT=AC+ACI
 BCT=BC+BCI
+
+!print *, 'a, ai', ac, aci, bc, bci
 
 if ( ABS(ACT) .LT. 0.001 .and. ABS(BCT) .LT. 0.001) then  ! A and B-PART are 0
     ACT = 0.000001
