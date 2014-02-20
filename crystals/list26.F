@@ -1741,8 +1741,11 @@ C--
       INCLUDE 'ISTORE.INC'
 C
       DIMENSION A1(12)
+	  DIMENSION ROT3(3)
+	  DIMENSION ROT2(3)
+	  DIMENSION ROT1(3)
+	  DIMENSION ANAXIS(3)
 	  DIMENSION DIFF_VEC(3)
-	  DIMENSION ORTD(3)
 C
       INCLUDE 'STORE.INC'
       INCLUDE 'XWORK.INC'
@@ -1764,13 +1767,8 @@ C--SET UP A FEW CONSTANTS
 C--SET UP THE ADDRESSES OF THE ATOMS                                    
 1000  CONTINUE                                                          
       JB=ISTORE(JA)             ! Address of next parameter block                                        
-      JP=ISTORE(JA+6)           ! Address of first parameter for atom 1                                        
-      JV=ISTORE(JB+6)           ! Address of first parameter for atom 2                                        
-C--SET UP THE ADDRESSES OF THE U(IJ)'S (skip over the X,Y & Z parameter entries to get to U11)                                  
-      DO I=1,3 
-         JP=ISTORE(JP) 
-         JV=ISTORE(JV) 
-      END DO
+      JP=ISTORE(JA+6)           ! Address of first parameter (U11) for atom 1                                        
+      JV=ISTORE(JB+6)           ! Address of first parameter (U11) for atom 2                                        
 C--CHECK THAT BOTH ATOMS ARE ANISO AND IF NOT MODIFY ACCORDINGLY        
       JX=JP                                                             
       JC=JA                                                             
@@ -1812,16 +1810,75 @@ C Here is the interatomic vector in crystal fractions:
 	  DIFF_VEC(2) = B
 	  DIFF_VEC(3) = C
 	  
-      CALL XMLTTM(STORE(L1O1),DIFF_VEC,ORTD(1),3,3,1)  ! Multiply diffvec by orthogonalisation matrix
+	  ANAXIS(1) = 1.0
+	  ANAXIS(2) = 0.0
+	  ANAXIS(3) = 0.0
+	  
+      CALL XMLTTM(STORE(L1O1),DIFF_VEC,ROT3(1),3,3,1)  ! Multiply diffvec by orthogonalisation matrix
 
+      CALL NORM3(ROT3) !Normalise
+C Take cross product with x axis (unless angle is too close to zero, in which case, use y.
+
+       VANGL = FDPROD(ROT3, XAXIS)	  ! Dot product to get angle
+       IF (VANGL .GT. 0.95) THEN  ! Almost paraller, use y-axis instead.
+	      ANAXIS(1) = 0.0
+	 	  ANAXIS(2) = 1.0
+       END IF
+	   
+	   CALL NCROP3(ROT3, ANAXIS, ROT2)  !Axis 2 perp to 3 and X-axis (or y if too close to x)
+	   CALL NCROP3(ROT2, ROT3, ROT1)   ! Axis 1 perp to 2 an 3.
+
+
+       AST = STORE(L1P2)
+       BST = STORE(L1P2+1)
+       CST = STORE(L1P2+2)
+	   
+C The orthog matrix. It is an upper triangle assuming fortran column ordering. (i.e. offsets +1 +2 +5 are zero).	  
+      PRINT *, (STORE(L1O1+I),I=0,8)
 C Derivatives go here. These values (iaxis*n) are currently just used for testing.
 
-      A1(7)=iaxis*1.0    ! dR/dU11
-      A1(8)=iaxis*2.0     ! dR/dU22
-      A1(9)=iaxis*3.0    ! dR/dU33
-      A1(10)=iaxis*4.0     ! dR/dU23           
-      A1(11)=iaxis*5.0     ! dR/dU13
-      A1(12)=iaxis*6.0     ! dR/dU12
+
+C Here, compute
+
+C IF IAXIS = 1, then UXZBAR, =2 for UYZBAR
+
+      IF ( IAXIS .EQ. 1 ) THEN   !UXZBAR
+
+        A1(7)=STORE(L1O1)*STORE(L1O1) * AST*AST * ROT1(1) * ROT3(1)
+
+        A1(8)=ROT3(1)* (STORE(L1O1+3)*STORE(L1O1+3)* BST*BST* ROT3(1)
+     1                 +STORE(L1O1+3)*STORE(L1O1+4)* BST*BST* ROT3(2))
+     2      + ROT3(2)* (STORE(L1O1+3)*STORE(L1O1+4)* BST*BST* ROT3(1)
+     1                 +STORE(L1O1+4)*STORE(L1O1+4)* BST*BST* ROT3(2))
+
+        A1(9)=ROT3(1)* (STORE(L1O1+6)*STORE(L1O1+6)* CST*CST* ROT1(1)
+     1                 +STORE(L1O1+6)*STORE(L1O1+7)* CST*CST* ROT1(2)		
+     1                 +STORE(L1O1+6)*STORE(L1O1+8)* CST*CST* ROT1(3))
+     1       +ROT3(2)* (STORE(L1O1+6)*STORE(L1O1+7)* CST*CST* ROT1(1)
+     1                 +STORE(L1O1+7)*STORE(L1O1+7)* CST*CST* ROT1(2)		
+     1                 +STORE(L1O1+7)*STORE(L1O1+8)* CST*CST* ROT1(3))
+     1       +ROT3(3)* (STORE(L1O1+6)*STORE(L1O1+8)* CST*CST* ROT1(1)
+     1                 +STORE(L1O1+7)*STORE(L1O1+8)* CST*CST* ROT1(2)		
+     1                 +STORE(L1O1+8)*STORE(L1O1+8)* CST*CST* ROT1(3))
+		
+           A1(10)= iaxis * 4.0
+           A1(11)=iaxis*5.0     ! dR/dU13
+           A1(12)=iaxis*6.0     ! dR/dU12
+		
+        ELSE   !UYZBAR
+		
+           A1(7)=iaxis*1.0    ! dR/dU11
+           A1(8)=iaxis*2.0     ! dR/dU22
+           A1(9)=iaxis*3.0    ! dR/dU33
+           A1(10)=iaxis*4.0     ! dR/dU23           
+           A1(11)=iaxis*5.0     ! dR/dU13
+           A1(12)=iaxis*6.0     ! dR/dU12
+		
+		END IF
+
+      DO  J=1,6                                                     
+         a1(j)=a1(j+6) 
+      END DO
 
       JO=JA   
       JX=JP   
@@ -3295,8 +3352,9 @@ c      write(ncwu,'(a,3g15.3)')'c&d ', c,d, store(l16+2)
         STORE(L11P+29)=STORE(L11P+29)+STORE(L16+2)*C
 
         IF (MATLAB.GT.0) WRITE(NCFPU2,'(G16.8)') D
+        print *, 'Rest(Target) - Rest(Calc) = ', D
 c		IF (MATLAB.GT.0) WRITE(NCWU,'(A,G16.8)')'Hello ',store(l11P+27)
-		
+        IM11C = 0
 C--PASS THROUGH THE MATRIX
         M11=L11
         DO I=L12B,M12B,MD12B                 !PROCESS BLOCK BY BLOCK
@@ -3305,11 +3363,14 @@ C--PASS THROUGH THE MATRIX
            L=M+N-1
 
            DO J=M,L  !PASS THROUGH THE PARAMETERS IN THIS BLOCK
+              IM11C = IM11C+1
 
               IF(ISTORE(M16) .NE. J) THEN             !Not this one.
+				 print *, IM11C, ': 0.0 '
                  IF (MATLAB.GT.0) WRITE(NCFPU1,'(''0.0 ...'')')
               ELSE                                    !Parameter is in queue
                  A=STORE(M16+1)*C
+				 print *, IM11C, ': ', STORE(M16+1), SQRT(ABS(C))*STORE(M16+1)
                  IF (MATLAB.GT.0) WRITE(NCFPU1,'(G16.8,'' ...'')')
      1                SQRT(ABS(C))*STORE(M16+1)
 C--ADD INTO THE R.H.S.
@@ -3335,6 +3396,10 @@ c                 CALL XPRVDU(NCVDU,1,0)
                            WRITE(NCFPU1,'(''0.0 ...'')')
                         END DO
                      END IF
+                     DO JJ = J+1,L
+					     IM11C = IM11C + 1
+          				 print *, IM11C, ': 0.0'
+                     END DO
                     GOTO 1800
                  ENDIF
                  M16=M16+MD16Q
@@ -3349,6 +3414,7 @@ C--FIND THE ADDRESS OF THE LENGTH OF THE NEXT ENTRY
         M16Q=M16Q+MD16Q
 C--FIND THE LENGTH OF THE NEXT ENTRY
         N16=ISTORE(M16Q)
+        print *, '=============='
         IF (MATLAB.GT.0) THEN
           WRITE(NCFPU1,'('' '')')
         END IF
