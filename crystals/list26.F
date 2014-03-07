@@ -288,7 +288,7 @@ C      9  VIBRATION 10 EXECUTION 11 NOLIST   12 UIJ
 C      13 EQUATE    14 PLANAR    15 SUM      16 FORM
 C      17 AVERAGE   18 LIMIT     19 ENERGY   20 ORIGIN
 C
-C      21 UXZBAR    22 UYZBAR
+C      21 UXZBAR    22 UYZBAR    23 UZZBAR
 C--
 C
       CHARACTER *24 CTEXT
@@ -409,7 +409,7 @@ C--SET THE CONVERSION FACTOR
 1200  CONTINUE
       CONV=1.
       GOTO(1300,1350,1550,1750,1850,1950,2100,2150,2200,2350,2400,2450,
-     2 1050,4000,4300,1050,4400,4370,1710, 5000,5010,5020,1250) ,I
+     2 1050,4000,4300,1050,4400,4370,1710, 5000,5010,5020,5030,1250) ,I
 1250  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -614,6 +614,29 @@ C To be replaced with JA routine:
      2 4X,5HDelta,A1,4X,8HCoord.'S)
       N=2
       GOTO 2500
+
+C--'UZZBAR' RESTRAINT
+5030  CONTINUE
+C To be replaced with JA routine:
+      CALL XCVCX(3,IASYM)
+      WRITE(*,*)'Hello UZZBar'
+      IF (ISSPRT .EQ. 0) THEN
+        WRITE(NCWU,5031)A,B,C
+      ENDIF
+5031  FORMAT(/1X,F4.0,
+     1 'UZZBAR - Restrain the covariance perp. to X and bond to be '
+     2 /6x,F9.5,'  angstrom squared, with an E.S.D. of',F9.5)
+      WRITE(CMON,5032)NINT(A+1), 'Variance difference ZZ ', B,C
+      CALL XPRVDU(NCVDU, 1,0)
+5032  FORMAT(I5, 1X, A, '. ', 'Target ',F7.4, ' esd ', F7.4)
+      IF (ISSPRT .EQ. 0) THEN
+         WRITE(NCWU,5033)(NUMB(N),(MSD(M),M=1,3),N=2,3)
+      ENDIF
+5033  FORMAT(/2X,2(10X,4HAtom,2X,A1,4X,15HS(I) L TX TY TZ,3X,2A4,A1),
+     2 4X,5HDelta,A1,4X,8HCoord.'S)
+      N=2
+      GOTO 2500
+C
 C
 C--'EXECUTION LISTING'
 2350  CONTINUE
@@ -685,7 +708,7 @@ C--CALCULATE THE 'DELTA' AND 'CALCULATED' VALUES
       A1(1)=B-A1(2)
 C--BRANCH ON THE TYPE OF RESTRAINTS
       GOTO(1050,1050,2850,3000,2850,3050,3150,3050,3200,1050,1050,3300,
-     2 1050,4150,1050,1050,4550,4540,2850,1050,3280,3290, 2800) ,I
+     2 1050,4150,1050,1050,4550,4540,2850,1050,3280,3290, 3270,2800) ,I
 2800  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -802,6 +825,29 @@ C--CALCULATE THE MEAN
       GOTO 2950
 CC--UYZBAR RESTRAINTS PRINT
 3290  CONTINUE
+      A1(3)=A1(2)
+      A1(2)=2.*SQRT(STORE(L22PD+3))
+      A1(1)=0.5*(A1(2)-A1(3))
+      A1(2)=A1(2)-A1(1)-B
+      IF (ISSPRT .EQ. 0) THEN
+      WRITE(NCWU,3250)KF,STORE(JA+2),ISTORE(JA+3),(ISTORE(M),M=JD,JE),
+     2 A1(1),STORE(JB+2),ISTORE(JB+3),(ISTORE(M),M=JF,JG),(A1(M),M=2,3)
+      ENDIF
+      IF ( (IMON .GT. 0 ) .OR. (ABS(A1(3)) .GE. C )) THEN
+c         WRITE(NCAWU,3251)KF,STORE(JA+2),ISTORE(JA+3),A1(1),
+c     2   STORE(JB+2),ISTORE(JB+3),A1(2),A1(3)
+         IF ((IMON .GE. 1) .AND. (ABS(A1(3)) .GE. C )) THEN
+         WRITE(CMON, 3251)KF,STORE(JA+2),ISTORE(JA+3),A1(1),
+     2   STORE(JB+2),ISTORE(JB+3),A1(2),A1(3)
+         CALL XPRVDU(NCVDU, 1,0)
+         ENDIF
+      ENDIF
+C--CALCULATE THE MEAN
+      A1(1)=0.5*(A1(1)+A1(2)+B)
+      A1(2)=A1(3)
+      GOTO 2950
+C--UZZBAR RESTRAINTS PRINT
+3270  CONTINUE
       A1(3)=A1(2)
       A1(2)=2.*SQRT(STORE(L22PD+3))
       A1(1)=0.5*(A1(2)-A1(3))
@@ -1173,7 +1219,7 @@ cdjwsep2011
        iasym = 0
       endif
       GOTO(1150,1200,1250,1300,1350,1400,1450,1500,1550,1600,1650,1700,
-     2 1950,2000,2050,2100,2150,2200,2250,2055,1560,1570,1100) ,I
+     2 1950,2000,2050,2100,2150,2200,2250,2055,1560,1570,1580,1100) ,I
 1100  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -1231,6 +1277,10 @@ C
 C--'UYZBAR' RESTRAINT
 1570  CONTINUE
       CALL XCVCX(2,iasym)
+      GOTO 1000
+C--'UZZBAR' RESTRAINT
+1580  CONTINUE
+      CALL XCVCX(3,iasym)
       GOTO 1000
 C
 C--'EXECUTION LISTING'
@@ -1667,6 +1717,7 @@ C--CHECK IF THIS THE FIRST OR SECOND ATOM                               CVC01090
       DO 1550 J=1,6                                                     CVC01140
 c      A1(J)=-A1(J)                                                      CVC01150
       a1(j)=-a1(j+6)*e                                                    CVC00920
+       print *, "Vib-derivs", a1(j)
 1550  CONTINUE                                                          CVC01160
       I=I-1                                                             CVC01170
       GOTO 1350                                                         CVC01180
@@ -1724,6 +1775,7 @@ C--CALCULATE VIBRATION RESTRAINTS
 C
 C      IAXIS = 1 FOR XZ COVARIANCE
 C      IAXIS = 2 FOR YZ COVARIANCE
+C      IAXIS = 3 FOR ZZ VARIANCE
 C
 C      IASYM = 1 FOR ASYMMETRIC OTHERWISE 0
 C
@@ -1806,21 +1858,27 @@ C Here is the interatomic vector in crystal fractions:
       B=STORE(JQ+10)-STORE(JU+10)
       C=STORE(JQ+12)-STORE(JU+12)
 
-	  DIFF_VEC(1) = A
-	  DIFF_VEC(2) = B
-	  DIFF_VEC(3) = C
+	     DIFF_VEC(1) = A
+	     DIFF_VEC(2) = B
+	     DIFF_VEC(3) = C
 	  
-	  ANAXIS(1) = 1.0
-	  ANAXIS(2) = 0.0
-	  ANAXIS(3) = 0.0
+	     ANAXIS(1) = 1.0
+	     ANAXIS(2) = 0.0
+	     ANAXIS(3) = 0.0
+      
+      print *, "Pre-Norm Pre-Orth Bond Vec"
+      print *, A, B, C
+      print *,	  
 	  
       CALL XMLTTM(STORE(L1O1),DIFF_VEC,ROT3(1),3,3,1)  ! Multiply diffvec by orthogonalisation matrix
-
+      print *, "Pre-Norm Orth Bond Vec"
+      print *, (ROT3(I), I=1,3)
+      print *,
       CALL NORM3(ROT3) !Normalise
 C Take cross product with x axis (unless angle is too close to zero, in which case, use y.
 
        VANGL = FDPROD(ROT3, XAXIS)	  ! Dot product to get angle
-       IF (VANGL .GT. 0.95) THEN  ! Almost paraller, use y-axis instead.
+       IF (VANGL .GT. 0.95) THEN  ! Almost parallel, use y-axis instead.
 	      ANAXIS(1) = 0.0
 	 	  ANAXIS(2) = 1.0
        END IF
@@ -1840,40 +1898,151 @@ C Derivatives go here. These values (iaxis*n) are currently just used for testin
 
 C Here, compute
 
-C IF IAXIS = 1, then UXZBAR, =2 for UYZBAR
-
+C IF IAXIS = 1, then UXZBAR, =2 for UYZBAR, IAXIS = 3 for UZZBAR
+          
+	  
       IF ( IAXIS .EQ. 1 ) THEN   !UXZBAR
 
-        A1(7)=STORE(L1O1)*STORE(L1O1) * AST*AST * ROT1(1) * ROT3(1)
+C	              ---- UXZBAR
+C       dR/dU11
+        A1(7)=  (STORE(L1O1+0)*AST*ROT1(1) + STORE(L1O1+1)*AST*ROT1(2) 
+     1          + STORE(L1O1+2)*AST*ROT1(3))*(STORE(L1O1+0)*AST*ROT3(1)
+     1	    	+ STORE(L1O1+1)*AST*ROT3(2) + STORE(L1O1+2)*AST*ROT3(3))
+		
+C       dR/dU22
+        A1(8)=  (STORE(L1O1+3)*BST*ROT1(1) + STORE(L1O1+4)*BST*ROT1(2) 
+     1	        + STORE(L1O1+5)*BST*ROT1(3))*(STORE(L1O1+3)*BST*ROT3(1) 
+     1		    + STORE(L1O1+4)*BST*ROT3(2) + STORE(L1O1+5)*BST*ROT3(3))
+C       dR/dU33
+        A1(9)=  (STORE(L1O1+6)*CST*ROT1(1) + STORE(L1O1+7)*CST*ROT1(2) 
+     1     	    + STORE(L1O1+8)*CST*ROT1(3))*(STORE(L1O1+6)*CST*ROT3(1) 
+     1          + STORE(L1O1+7)*CST*ROT3(2) + STORE(L1O1+8)*CST*ROT3(3))
 
-        A1(8)=ROT3(1)* (STORE(L1O1+3)*STORE(L1O1+3)* BST*BST* ROT3(1)
-     1                 +STORE(L1O1+3)*STORE(L1O1+4)* BST*BST* ROT3(2))
-     2      + ROT3(2)* (STORE(L1O1+3)*STORE(L1O1+4)* BST*BST* ROT3(1)
-     1                 +STORE(L1O1+4)*STORE(L1O1+4)* BST*BST* ROT3(2))
+C       dR/dU23				 
+        A1(10)= (STORE(L1O1+3)*BST*ROT1(1) + STORE(L1O1+4)*BST*ROT1(2) 
+     1	        + STORE(L1O1+5)*BST*ROT1(3))*(STORE(L1O1+6)*CST*ROT3(1) 
+     1			+ STORE(L1O1+7)*CST*ROT3(2) + STORE(L1O1+8)*CST*ROT3(3)) 
+     1			+ (STORE(L1O1+3)*BST*ROT3(1) + STORE(L1O1+4)*BST*ROT3(2) 
+     1			+ STORE(L1O1+5)*BST*ROT3(3))*(STORE(L1O1+6)*CST*ROT1(1) 
+     1			+ STORE(L1O1+7)*CST*ROT1(2) + STORE(L1O1+8)*CST*ROT1(3))
+     		 
+C       dR/dU13
+        A1(11)= (STORE(L1O1+0)*AST*ROT1(1) + STORE(L1O1+1)*AST*ROT1(2) 
+     1	        + STORE(L1O1+2)*AST*ROT1(3))*(STORE(L1O1+6)*CST*ROT3(1) 
+     1			+ STORE(L1O1+7)*CST*ROT3(2) + STORE(L1O1+8)*CST*ROT3(3)) 
+     1			+ (STORE(L1O1+0)*AST*ROT3(1) + STORE(L1O1+1)*AST*ROT3(2) 
+     1			+ STORE(L1O1+2)*AST*ROT3(3))*(STORE(L1O1+6)*CST*ROT1(1) 
+     1			+ STORE(L1O1+7)*CST*ROT1(2) + STORE(L1O1+8)*CST*ROT1(3))
 
-        A1(9)=ROT3(1)* (STORE(L1O1+6)*STORE(L1O1+6)* CST*CST* ROT1(1)
-     1                 +STORE(L1O1+6)*STORE(L1O1+7)* CST*CST* ROT1(2)		
-     1                 +STORE(L1O1+6)*STORE(L1O1+8)* CST*CST* ROT1(3))
-     1       +ROT3(2)* (STORE(L1O1+6)*STORE(L1O1+7)* CST*CST* ROT1(1)
-     1                 +STORE(L1O1+7)*STORE(L1O1+7)* CST*CST* ROT1(2)		
-     1                 +STORE(L1O1+7)*STORE(L1O1+8)* CST*CST* ROT1(3))
-     1       +ROT3(3)* (STORE(L1O1+6)*STORE(L1O1+8)* CST*CST* ROT1(1)
-     1                 +STORE(L1O1+7)*STORE(L1O1+8)* CST*CST* ROT1(2)		
-     1                 +STORE(L1O1+8)*STORE(L1O1+8)* CST*CST* ROT1(3))
+C       dR/dU12
+        A1(12)= (STORE(L1O1+0)*AST*ROT1(1) + STORE(L1O1+1)*AST*ROT1(2) 
+     1	        + STORE(L1O1+2)*AST*ROT1(3))*(STORE(L1O1+3)*BST*ROT3(1) 
+     1			+ STORE(L1O1+4)*BST*ROT3(2) + STORE(L1O1+5)*BST*ROT3(3)) 
+     1			+ (STORE(L1O1+0)*AST*ROT3(1) + STORE(L1O1+1)*AST*ROT3(2) 
+     1			+ STORE(L1O1+2)*AST*ROT3(3))*(STORE(L1O1+3)*BST*ROT1(1) 
+     1			+ STORE(L1O1+4)*BST*ROT1(2) + STORE(L1O1+5)*BST*ROT1(3))
+	 
+	     PRINT *,"Derivatives XZ", (A1(I), I=7,12)
 		
-           A1(10)= iaxis * 4.0
-           A1(11)=iaxis*5.0     ! dR/dU13
-           A1(12)=iaxis*6.0     ! dR/dU12
+        ELSE IF ( IAXIS .EQ. 2) THEN  !UYZBAR
+
+C	              ---- UYZBAR		
+C       dR/dU11		
+        A1(7)=  (STORE(L1O1+0)*AST*ROT2(1) + STORE(L1O1+1)*AST*ROT2(2) 
+     1	        + STORE(L1O1+2)*AST*ROT2(3))*(STORE(L1O1+0)*AST*ROT3(1) 
+     1			+ STORE(L1O1+1)*AST*ROT3(2) + STORE(L1O1+2)*AST*ROT3(3))
 		
-        ELSE   !UYZBAR
+C       dR/dU22
+        A1(8)=  (STORE(L1O1+3)*BST*ROT2(1) + STORE(L1O1+4)*BST*ROT2(2) 
+     1	        + STORE(L1O1+5)*BST*ROT2(3))*(STORE(L1O1+3)*BST*ROT3(1) 
+     1			+ STORE(L1O1+4)*BST*ROT3(2) + STORE(L1O1+5)*BST*ROT3(3))
+				  
+C       dR/dU33
+        A1(9)=  (STORE(L1O1+6)*CST*ROT2(1) + STORE(L1O1+7)*CST*ROT2(2) 
+     1	        + STORE(L1O1+8)*CST*ROT2(3))*(STORE(L1O1+6)*CST*ROT3(1) 
+     1			+ STORE(L1O1+7)*CST*ROT3(2) + STORE(L1O1+8)*CST*ROT3(3))
+				 
+C       dR/dU23
+        A1(10)= (STORE(L1O1+3)*BST*ROT2(1) + STORE(L1O1+4)*BST*ROT2(2) 
+     1	        + STORE(L1O1+5)*BST*ROT2(3))*(STORE(L1O1+6)*CST*ROT3(1) 
+     1			+ STORE(L1O1+7)*CST*ROT3(2) + STORE(L1O1+8)*CST*ROT3(3)) 
+     1			+ (STORE(L1O1+3)*BST*ROT3(1) + STORE(L1O1+4)*BST*ROT3(2) 
+     1			+ STORE(L1O1+5)*BST*ROT3(3))*(STORE(L1O1+6)*CST*ROT2(1) 
+     1			+ STORE(L1O1+7)*CST*ROT2(2) + STORE(L1O1+8)*CST*ROT2(3)) 
+
+C       dR/dU13				  
+        A1(11)= (STORE(L1O1+0)*AST*ROT2(1) + STORE(L1O1+1)*AST*ROT2(2) 
+     1	        + STORE(L1O1+2)*AST*ROT2(3))*(STORE(L1O1+6)*CST*ROT3(1) 
+     1			+ STORE(L1O1+7)*CST*ROT3(2) + STORE(L1O1+8)*CST*ROT3(3)) 
+     1			+ (STORE(L1O1+0)*AST*ROT3(1) + STORE(L1O1+1)*AST*ROT3(2) 
+     1			+ STORE(L1O1+2)*AST*ROT3(3))*(STORE(L1O1+6)*CST*ROT2(1) 
+     1			+ STORE(L1O1+7)*CST*ROT2(2) + STORE(L1O1+8)*CST*ROT2(3))
+				  
+C       dR/dU12
+        A1(12)= (STORE(L1O1+0)*AST*ROT2(1) + STORE(L1O1+1)*AST*ROT2(2) 
+     1	        + STORE(L1O1+2)*AST*ROT2(3))*(STORE(L1O1+3)*BST*ROT3(1) 
+     1			+ STORE(L1O1+4)*BST*ROT3(2) + STORE(L1O1+5)*BST*ROT3(3)) 
+     1			+ (STORE(L1O1+0)*AST*ROT3(1) + STORE(L1O1+1)*AST*ROT3(2) 
+     1			+ STORE(L1O1+2)*AST*ROT3(3))*(STORE(L1O1+3)*BST*ROT2(1) 
+     1			+ STORE(L1O1+4)*BST*ROT2(2) + STORE(L1O1+5)*BST*ROT2(3))
+	 
+	     PRINT *,"Derivatives YZ", (A1(I), I=7,12)
+		 
 		
-           A1(7)=iaxis*1.0    ! dR/dU11
-           A1(8)=iaxis*2.0     ! dR/dU22
-           A1(9)=iaxis*3.0    ! dR/dU33
-           A1(10)=iaxis*4.0     ! dR/dU23           
-           A1(11)=iaxis*5.0     ! dR/dU13
-           A1(12)=iaxis*6.0     ! dR/dU12
-		
+        ELSE   !UZZBAR
+
+C      ##### ZZ DERIVS ####
+
+C      dX/dU11
+        A1(7)= (AST*ROT3(1)*STORE(L1O1+0) + AST*ROT3(2)*STORE(L1O1+3) 
+     1       + AST*ROT3(3)*STORE(L1O1+6))**2
+C      dX/dU22
+        A1(8)= (BST*ROT3(1)*STORE(L1O1+1) + BST*ROT3(2)*STORE(L1O1+4) 
+     1       + BST*ROT3(3)*STORE(L1O1+7))**2
+C      dX/dU33
+        A1(9)= (CST*ROT3(1)*STORE(L1O1+2) + CST*ROT3(2)*STORE(L1O1+5) 
+     1       + CST*ROT3(3)*STORE(L1O1+8))**2
+C      dX/dU23
+        A1(10)= 2*(BST*ROT3(1)*STORE(L1O1+1) + BST*ROT3(2)*STORE(L1O1+4) 
+     1       + BST*ROT3(3)*STORE(L1O1+7))*(CST*ROT3(1)*STORE(L1O1+2) 
+     1       + CST*ROT3(2)*STORE(L1O1+5) + CST*ROT3(3)*STORE(L1O1+8))
+C      dX/dU13
+        A1(11)= 2*(AST*ROT3(1)*STORE(L1O1+0) + AST*ROT3(2)*STORE(L1O1+3) 
+     1       + AST*ROT3(3)*STORE(L1O1+6))*(CST*ROT3(1)*STORE(L1O1+2) 
+     1       + CST*ROT3(2)*STORE(L1O1+5) + CST*ROT3(3)*STORE(L1O1+8))
+C      dX/dU12
+        A1(12)= 2*(AST*ROT3(1)*STORE(L1O1+0) + AST*ROT3(2)*STORE(L1O1+3) 
+     1       + AST*ROT3(3)*STORE(L1O1+6))*(BST*ROT3(1)*STORE(L1O1+1) 
+     1       + BST*ROT3(2)*STORE(L1O1+4) + BST*ROT3(3)*STORE(L1O1+7))
+	 	    
+            PRINT *,			
+            PRINT *,"Derivatives ZZ:"
+            PRINT *,A1(7)
+            PRINT *,A1(8)
+            PRINT *,A1(9)
+            PRINT *,A1(10)
+            PRINT *,A1(11)
+            PRINT *,A1(12)
+		    PRINT *,
+            PRINT *,"R Matrix:"
+            PRINT *,(ROT1(I), I=1,3)
+            PRINT *,(ROT2(I), I=1,3)
+            PRINT *,(ROT3(I), I=1,3)
+            PRINT *,
+            PRINT *,"A Matrix:"
+		    PRINT *,STORE(L1O1+0),STORE(L1O1+3),STORE(L1O1+6)
+		    PRINT *,STORE(L1O1+1),STORE(L1O1+4),STORE(L1O1+7)
+		    PRINT *,STORE(L1O1+2),STORE(L1O1+5),STORE(L1O1+8)
+            PRINT *,
+            PRINT *,"B Matrix Values:"
+            PRINT *,AST,BST,CST
+            PRINT *,			
+			
+			
+			
+			
+			
+			
 		END IF
 
       DO  J=1,6                                                     
