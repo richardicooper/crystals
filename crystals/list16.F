@@ -356,7 +356,7 @@ C  13.PLANAR        14.SUM           15.FORM          16.AVERAGE
 C  17.LIMIT         18.ENERGY        19.ORIGIN        20.REM
 C  21.SAME          22.DELU          23.SIMU          24.A-VIB
 C  25.A-U(IJ)'S     26. A-DIST       27.UXZBAR        28.UYZBAR
-C  29.UZZBAR
+C  29.UZZBAR        30. UQUIV
 C
 C----- ISTORE (LCG+1) OPERATIONS 
 c      Note that some correspond to several MG values.
@@ -367,7 +367,7 @@ C      13 EQUATE    14 PLANAR    15 SUM      16 FORM
 C      17 AVERAGE   18 LIMIT     19 ENERGY   20 ORIGIN
 C Hmmm.
 C      21 REM       22 SAME      23 DELU     24 SIMU 
-C      21 UXZBAR    22 UYZBAR    23 UZZBAR
+C      21 UXZBAR    22 UYZBAR    23 UZZBAR   24 UQUIv
 C
       INCLUDE 'ICOM05.INC'
       INCLUDE 'ICOM12.INC'
@@ -1218,6 +1218,16 @@ C--'UZZBAR' RESTRAINT
       L=6    ! Six parameters involved
       M=8    ! First parameter at slot '8' (U11).
       GOTO 1900
+
+C--'UQUIV' RESTRAINT
+2256  CONTINUE
+      ISTORE(LCG+1)=23
+      K=0    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
+	  
+	  
 C
 C--'ABORT' CARD  -  RESET THE ABORTION LIMIT FOR 'EQUATE'
 2300  CONTINUE
