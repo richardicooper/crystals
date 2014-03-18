@@ -400,11 +400,12 @@ using namespace std;
             dscfile = command.substr(ils+1,remain);
         }
       }
-*/
+
       std::cerr << "DSCfile to be opened: " << dscfile << "\n";
       std::cerr << "Working directory:    " << directory << "\n";
 
     }
+*/
     theControl = new CcController(directory,dscfile);
    // kickTimer = new wxTimer(this, 5241);
    // kickTimer->Start(500);      //Call OnKickTimer every 1/2 second while idle.
