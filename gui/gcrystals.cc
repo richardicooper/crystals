@@ -354,8 +354,9 @@ using namespace std;
       putenv( env );
 #endif      
     }
+	*/
 #endif
-*/
+
 //    MessageBox(NULL,_T("Press OK to start"),_T("Pause for debug"),MB_OK);
 
 /*
@@ -406,7 +407,7 @@ using namespace std;
 
     }
 */
-    theControl = new CcController(directory,dscfile);
+		theControl = new CcController(directory,dscfile);
    // kickTimer = new wxTimer(this, 5241);
    // kickTimer->Start(500);      //Call OnKickTimer every 1/2 second while idle.
     return true;
