@@ -334,7 +334,7 @@ using namespace std;
       macSetCRYSDIR((char*)tPath);
     }
 #else
-    if ( getenv("CRYSDIR") == nil )
+/*    if ( getenv("CRYSDIR") == nil )
     {
  // Use the registry to fetch keys.
       string location;
@@ -355,9 +355,10 @@ using namespace std;
 #endif      
     }
 #endif
-
+*/
 //    MessageBox(NULL,_T("Press OK to start"),_T("Pause for debug"),MB_OK);
 
+/*
     for ( int i = 1; i < argc; i++ )
     {
       string command = string(argv[i]);
@@ -399,7 +400,7 @@ using namespace std;
             dscfile = command.substr(ils+1,remain);
         }
       }
-
+*/
       std::cerr << "DSCfile to be opened: " << dscfile << "\n";
       std::cerr << "Working directory:    " << directory << "\n";
 
