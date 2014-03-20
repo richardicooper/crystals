@@ -334,7 +334,7 @@ using namespace std;
       macSetCRYSDIR((char*)tPath);
     }
 #else
-/*    if ( getenv("CRYSDIR") == nil )
+    if ( getenv("CRYSDIR") == nil )
     {
  // Use the registry to fetch keys.
       string location;
@@ -349,17 +349,17 @@ using namespace std;
       strcpy(env, location.c_str());
       stringlist.push_back(env);
 #ifdef __BOTHWIN__      
-      _putenv( env );
+//      _putenv( env );
 #else     
-      putenv( env );
+//      putenv( env );
 #endif      
     }
-	*/
+	
 #endif
 
 //    MessageBox(NULL,_T("Press OK to start"),_T("Pause for debug"),MB_OK);
 
-/*
+
     for ( int i = 1; i < argc; i++ )
     {
       string command = string(argv[i]);
@@ -378,9 +378,9 @@ using namespace std;
           strcpy(env, envvar.c_str());
           stringlist.push_back(env);
 #if defined (__BOTHWIN__)
-          _putenv( env );
+//          _putenv( env );
 #else
-          putenv( env );
+//          putenv( env );
 #endif
           i = i + 2;
         }
@@ -406,7 +406,7 @@ using namespace std;
       std::cerr << "Working directory:    " << directory << "\n";
 
     }
-*/
+
 		theControl = new CcController(directory,dscfile);
    // kickTimer = new wxTimer(this, 5241);
    // kickTimer->Start(500);      //Call OnKickTimer every 1/2 second while idle.
