@@ -348,8 +348,9 @@ using namespace std;
       char * env = new char[location.size()+1];
       strcpy(env, location.c_str());
       stringlist.push_back(env);
+	  
 #ifdef __BOTHWIN__      
-//      _putenv( env );
+      _putenv( location.c_str() ); // safe _putenv makes a copy
 #else     
 //      putenv( env );
 #endif      
@@ -378,7 +379,7 @@ using namespace std;
           strcpy(env, envvar.c_str());
           stringlist.push_back(env);
 #if defined (__BOTHWIN__)
-//          _putenv( env );
+          _putenv( envvar.c_str() ); // safe putenv makes a copy
 #else
 //          putenv( env );
 #endif
