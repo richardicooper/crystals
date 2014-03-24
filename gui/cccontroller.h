@@ -1,3 +1,4 @@
+
 ////////////////////////////////////////////////////////////////////////
 
 //   CRYSTALS Interface      Class CcController
@@ -19,6 +20,7 @@
 #include <vector>
 #include <deque>
 #include <list>
+#include <map>
 
 #ifdef __BOTHWIN__
  #include <windows.h>
@@ -165,6 +167,7 @@ class   CcController
     static wxFont* mp_inputfont;
 #endif
 
+	static std::map<string,string> m_extraEnvironment;
 
 
   private:
