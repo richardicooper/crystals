@@ -755,7 +755,7 @@ static set<string> stringset;
 CcController* CcController::theController = nil;
 int CcController::debugIndent = 0;
 
-std::map<string,string> m_extraEnvironment;
+std::map<string,string> CcController::m_extraEnvironment;
 
 
 CcController::CcController( const string & directory, const string & dscfile )
@@ -3409,7 +3409,7 @@ extern "C" {
 	  string k(key);
 	  // First check our list of internal environment variables - these override the process environment
 	  // and ensure we don't interfere with that memory.
-	  string r = string( m_extraEnvironment[k] );
+	  string r = string( CcController::m_extraEnvironment[k] );
 	  char * res;
 	  if ( r.length() ) {
 			strcpy( value, r.c_str() );
