@@ -627,6 +627,7 @@
 #include    <sstream>
 #include    <deque>
 #include    <algorithm>
+#include 	<map>
 using namespace std;
 
 #include    "crconstants.h"
@@ -753,6 +754,9 @@ static set<string> stringset;
 
 CcController* CcController::theController = nil;
 int CcController::debugIndent = 0;
+
+std::map<string,string> m_extraEnvironment;
+
 
 CcController::CcController( const string & directory, const string & dscfile )
 {
@@ -3399,9 +3403,20 @@ extern "C" {
 
   void FORCALL(getcenv) ( char* key, char* value)
   {
-	  char* v;
-	  v = getenv(key);
-	  if ( v ) strcpy(value,v);
+  
+  // char* should be 262 in length (allocated in the FORTRAN).
+
+	  string k(key);
+	  // First check our list of internal environment variables - these override the process environment
+	  // and ensure we don't interfere with that memory.
+	  string r = string( m_extraEnvironment[k] );
+	  char * res;
+	  if ( r.length() ) {
+			strcpy( value, r.c_str() );
+	  } else {
+		char* res = getenv(key);
+		if ( res ) strcpy (value,res);
+	  }
   }
 
   void FORCALL(guexec) ( char* theLine)

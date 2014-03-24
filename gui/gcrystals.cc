@@ -344,13 +344,15 @@ using namespace std;
         location = str.c_str();
       }
       delete config;
-      location = location.insert( 0, "CRYSDIR=" );
-      char * env = new char[location.size()+1];
-      strcpy(env, location.c_str());
-      stringlist.push_back(env);
+//      location = location.insert( 0, "CRYSDIR=" );
+//      char * env = new char[location.size()+1];
+//      strcpy(env, location.c_str());
+//      stringlist.push_back(env);
+	  
+	  CcController::m_extraEnvironment["CRYSDIR"] = location;
 	  
 #ifdef __BOTHWIN__      
-      _putenv( location.c_str() ); // safe _putenv makes a copy
+//      _putenv( location.c_str() ); // safe _putenv makes a copy
 #else     
 //      putenv( env );
 #endif      
@@ -372,14 +374,15 @@ using namespace std;
         }
         else
         {
-          string envvar = string(argv[i+1]);
-          envvar += "=";
-          envvar += argv[i+2];
-          char * env = new char[envvar.size()+1];
-          strcpy(env, envvar.c_str());
-          stringlist.push_back(env);
+ //         string envvar = string(argv[i+1]);
+ //         envvar += "=";
+ //         envvar += argv[i+2];
+ //         char * env = new char[envvar.size()+1];
+//          strcpy(env, envvar.c_str());
+//          stringlist.push_back(env);
+	  CcController::m_extraEnvironment[string(argv[i+1])] = string(argv[i+2]);
 #if defined (__BOTHWIN__)
-          _putenv( envvar.c_str() ); // safe putenv makes a copy
+//          _putenv( envvar.c_str() ); // safe putenv makes a copy
 #else
 //          putenv( env );
 #endif
