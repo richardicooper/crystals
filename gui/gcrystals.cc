@@ -349,7 +349,7 @@ using namespace std;
 //      strcpy(env, location.c_str());
 //      stringlist.push_back(env);
 	  
-	  CcController::m_extraEnvironment["CRYSDIR"] = location;
+//	  CcController::m_extraEnvironment["CRYSDIR"] = location;
 	  
 #ifdef __BOTHWIN__      
 //      _putenv( location.c_str() ); // safe _putenv makes a copy
