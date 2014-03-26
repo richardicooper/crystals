@@ -934,7 +934,7 @@ CcController::CcController( const string & directory, const string & dscfile )
       string::size_type qp = dsctemp.find_last_of('\"');
       if ( qp != string::npos ) dsctemp.erase(qp,1);
 #ifdef __BOTHWIN__
-      _putenv( dsctemp.c_str() );
+//      _putenv( dsctemp.c_str() );
 #else
       char * env = new char[dsctemp.size()+1];
       strcpy(env, dsctemp.c_str());
@@ -991,7 +991,7 @@ CcController::CcController( const string & directory, const string & dscfile )
     if ( envv == NULL )
     {
 #ifdef __BOTHWIN__
-       _putenv( "CRDSC=crfilev2.dsc" );
+//       _putenv( "CRDSC=crfilev2.dsc" );
 #else
 //       _setenv("CRDSC", "crfilev2.dsc", 1);
        string p = "CRDSC=crfilev2.dsc";
@@ -3406,17 +3406,17 @@ extern "C" {
   
   // char* should be 262 in length (allocated in the FORTRAN).
 
-	  string k(key);
+//	  string k(key);
 	  // First check our list of internal environment variables - these override the process environment
 	  // and ensure we don't interfere with that memory.
-	  string r = string( CcController::m_extraEnvironment[k] );
+//	  string r = string( CcController::m_extraEnvironment[k] );
 	  char * res;
-	  if ( r.length() ) {
-			strcpy( value, r.c_str() );
-	  } else {
+//	  if ( r.length() ) {
+//			strcpy( value, r.c_str() );
+//	  } else {
 		char* res = getenv(key);
 		if ( res ) strcpy (value,res);
-	  }
+//	  }
   }
 
   void FORCALL(guexec) ( char* theLine)
