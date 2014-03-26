@@ -3410,7 +3410,7 @@ extern "C" {
 	  // First check our list of internal environment variables - these override the process environment
 	  // and ensure we don't interfere with that memory.
 //	  string r = string( CcController::m_extraEnvironment[k] );
-	  char * res;
+	  //char * res;
 //	  if ( r.length() ) {
 //			strcpy( value, r.c_str() );
 //	  } else {
