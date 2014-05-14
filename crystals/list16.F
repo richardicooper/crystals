@@ -356,7 +356,9 @@ C  13.PLANAR        14.SUM           15.FORM          16.AVERAGE
 C  17.LIMIT         18.ENERGY        19.ORIGIN        20.REM
 C  21.SAME          22.DELU          23.SIMU          24.A-VIB
 C  25.A-U(IJ)'S     26. A-DIST       27.UXZBAR        28.UYZBAR
-C  29.UZZBAR        30. UQUIV
+C  29.UZZBAR        30. UXPERP       31.UYPERP        32.UXPARA
+C  33.UYPARA        34. UZPARA       35.UXXQIV        36.UXYQIV
+C  37.UXZQIV        38. UYYQIV       39.UYZQIV        40.UZZQIV
 C
 C----- ISTORE (LCG+1) OPERATIONS 
 c      Note that some correspond to several MG values.
@@ -367,7 +369,10 @@ C      13 EQUATE    14 PLANAR    15 SUM      16 FORM
 C      17 AVERAGE   18 LIMIT     19 ENERGY   20 ORIGIN
 C Hmmm.
 C      21 REM       22 SAME      23 DELU     24 SIMU 
-C      21 UXZBAR    22 UYZBAR    23 UZZBAR   24 UQUIv
+C      21 UXZBAR    22 UYZBAR    23 UZZBAR   24 UXPERP
+C      25 UYPERP    26 UXPARA    27 UYPARA   28 UZPARA
+C      29 UXXQIV    30 UXYQIV    31 UXZQIV   32 UYYQIV
+C      33 UYZQIV    34 UZZQIV
 C
       INCLUDE 'ICOM05.INC'
       INCLUDE 'ICOM12.INC'
@@ -488,7 +493,8 @@ c----- indicate a normal directive
 C--JUMP ON THE FUNCTION OF THE CARD
       GOTO(1300,1350,1500,1800,1850,2050,2100,2150,2200,2250,
      2     2300,2450,4050,4550,5400,5650,5660,7000,7200,1150,
-     3     1810,1810,1810,1851,2251,1510,2258,2259,2257,1250)MG
+     3     1810,1810,1810,1851,2251,1510,2258,2259,2257,2255,2256,
+     4     2260,2261,2262,2263,2264,2265,2266,2267,2268,1250)MG
 1250  CONTINUE
       CALL XOPMSG (IOPL16, IOPINT, 0)
       GOTO 9900
@@ -1219,15 +1225,93 @@ C--'UZZBAR' RESTRAINT
       M=8    ! First parameter at slot '8' (U11).
       GOTO 1900
 
-C--'UQUIV' RESTRAINT
+C--'UXPERP' RESTRAINT
+2255  CONTINUE
+      ISTORE(LCG+1)=24
+      K=1    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
+
+C--'UYPERP' RESTRAINT
 2256  CONTINUE
-      ISTORE(LCG+1)=23
-      K=0    ! Allow one 'TO' connector
+      ISTORE(LCG+1)=25
+      K=1    ! Allow one 'TO' connector
       L=6    ! Six parameters involved
       M=8    ! First parameter at slot '8' (U11).
       GOTO 1900
 	  
+C--'UXPARA' RESTRAINT
+2260  CONTINUE
+      ISTORE(LCG+1)=26
+      K=2    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900	  
+
+C--'UYPARA' RESTRAINT
+2261  CONTINUE
+      ISTORE(LCG+1)=27
+      K=2    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900	  
+
+C--'UZPARA' RESTRAINT
+2262  CONTINUE
+      ISTORE(LCG+1)=28
+      K=2    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900	  
+
+C--'UXXQIV' RESTRAINT
+2263  CONTINUE
+      ISTORE(LCG+1)=29
+      K=5    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
+
+C--'UXYQIV' RESTRAINT
+2264  CONTINUE
+      ISTORE(LCG+1)=30
+      K=5    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900	  
+
+C--'UXZQIV' RESTRAINT
+2265  CONTINUE
+      ISTORE(LCG+1)=31
+      K=5    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
+
+C--'UYYQIV' RESTRAINT
+2266  CONTINUE
+      ISTORE(LCG+1)=32
+      K=5    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
 	  
+C--'UYZQIV' RESTRAINT
+2267  CONTINUE
+      ISTORE(LCG+1)=33
+      K=5    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
+	  
+C--'UZZQIV' RESTRAINT
+2268  CONTINUE
+      ISTORE(LCG+1)=34
+      K=5    ! Allow one 'TO' connector
+      L=6    ! Six parameters involved
+      M=8    ! First parameter at slot '8' (U11).
+      GOTO 1900
 C
 C--'ABORT' CARD  -  RESET THE ABORTION LIMIT FOR 'EQUATE'
 2300  CONTINUE

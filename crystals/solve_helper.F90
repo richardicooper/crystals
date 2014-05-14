@@ -346,6 +346,7 @@ info=0
 
 ! preconditioning using diagonal terms
 ! Allocate diagonal vector
+if(allocated(preconditioner)) deallocate(preconditioner)
 allocate(preconditioner(nmsize))
 do i=1,nmsize
     j = ((i-1)*(2*(nmsize)-i+2))/2
@@ -361,6 +362,7 @@ preconditioner = 1.0/sqrt(preconditioner)
 ! N' = C N C
 ! N: normal matrix
 ! C: diagonal matrix with elements from the N diagonal
+if(allocated(unpacked)) deallocate(unpacked)
 allocate(unpacked(nmsize, nmsize))
 do i=1, nmsize
     j = ((i-1)*(2*(nmsize)-i+2))/2
@@ -383,6 +385,7 @@ call date_and_time(VALUES=measuredtime)
 starttime=((measuredtime(5)*3600+measuredtime(6)*60)+measuredtime(7))*1000+measuredtime(8)
 #endif
 
+if(allocated(ipiv)) deallocate(ipiv)
 allocate(ipiv(nmsize))
 lwork = ILAENV( 1, 'SSYTRF', 'L', nmsize, nmsize, -1, -1)
 allocate(work(nmsize*lwork))
@@ -395,6 +398,7 @@ deallocate(work)
 if(info>0) then 
 	return
 end if
+
 
 allocate(work(2*nmsize))
 allocate(iwork(nmsize))
