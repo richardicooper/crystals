@@ -32,6 +32,8 @@
 ^^WI            '#SCRIPT XSHIFTL' DISABLEIF='IN' ENABLEIF='L5'                  
 ^^WI   ITEM DELUS 'Add 1-2,1-3 vibration restraints'                            
 ^^WI            '#SCRIPT YDELU' DISABLEIF='IN' ENABLEIF='L5'                    
+^^WI   ITEM DELUS 'Add H-Vib restraints'                            
+^^WI            '#SCRIPT YHVIB' DISABLEIF='IN' ENABLEIF='L5'                    
 ^^WI   ITEM SIMUS 'Add 1-2,1-3 thermal similarity restraints'                   
 ^^WI            '#SCRIPT YSIMU' DISABLEIF='IN' ENABLEIF='L5'                    
 ^^WI  SPLIT                                                                     
