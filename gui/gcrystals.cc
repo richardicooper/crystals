@@ -223,12 +223,12 @@ using namespace std;
 */
 
   // CCrystalsApp initialization
-//  EVT_TIMER ( 5241, CCrystalsApp::OnKickTimer )
 //  BEGIN_EVENT_TABLE( CCrystalsApp, wxApp )
 	//  EVT_CC_COMMAND_ADDED (wxID_ANY, CCrystalsApp::OnCrystCommand )
   //END_EVENT_TABLE()
   BEGIN_EVENT_TABLE( CCrystalsApp, wxApp )
-	  EVT_CUSTOM ( ccEVT_COMMAND_ADDED, wxID_ANY, CCrystalsApp::OnCrystCommand )
+        EVT_TIMER ( 5241, CCrystalsApp::OnKickTimer )
+        EVT_CUSTOM ( ccEVT_COMMAND_ADDED, wxID_ANY, CCrystalsApp::OnCrystCommand )
 //          EVT_ACTIVATE_APP( CCrystalsApp::Activate )
   END_EVENT_TABLE()
 
@@ -250,78 +250,104 @@ using namespace std;
   #endif
 
 #if defined(CRY_OSMAC)
-  #include <Carbon/Carbon.h>
-  #include <stdlib.h>
-  #include <iostream>
+#include <CoreFoundation/CoreFoundation.h>
+#include <Carbon/Carbon.h>
+#include <stdlib.h>
+#include <iostream>
 
-  const string macWorkingDir()
-  {
-   NavDialogCreationOptions tDialogOptions;
-   NavDialogRef tDialog; 
-   NavReplyRecord tReply;
-
-   if (NavGetDefaultDialogCreationOptions(&tDialogOptions) == noErr)
+wxString macWorkingDir()
+{
+    wxDirDialog dlg(NULL, "Choose directory to run CRYSTALS", wxGetCwd(),
+                    wxDD_DEFAULT_STYLE );
+    
+    if ( dlg.ShowModal() == wxID_OK )
     {
-      tDialogOptions.windowTitle = CFSTR("Select Working Directory");
-      tDialogOptions.actionButtonLabel = CFSTR("Choose");
-
-      if (NavCreateChooseFolderDialog(&tDialogOptions, NULL, 
-				      NULL, NULL, &tDialog) == noErr)
-	{
-	  NavDialogRun(tDialog);
-	  NavUserAction tUserAction = NavDialogGetUserAction(tDialog);
-	  if (tUserAction != kNavUserActionCancel && 
-	      tUserAction != kNavUserActionNone)
-	    {
-	      NavDialogGetReply(tDialog, &tReply);
-	      SInt32 tCount;
-	      UInt8  tPath[PATH_MAX];
-	      if (tReply.validRecord && 
-		  AECountItems(&(tReply.selection), &tCount) == noErr && 
-		  tCount == 1)  //1 Directory was chosen 
-		{
-		  FSRef tFolder;
-		  DescType tType;
-		  AEKeyword tKeyWord;
-		  Size tSize;
-	      
-		  AEGetNthPtr(&(tReply.selection), 1, typeFSRef, &tKeyWord, &tType,
-			      (DescType*)&tFolder, sizeof(tFolder), &tSize); 
-		  FSRefMakePath(&tFolder, tPath, PATH_MAX);
-		}
-	      NavDisposeReply(&tReply);
-	      return string((char*)tPath);
-	    }
-	  exit(0);
-	}
-
+        return dlg.GetPath();
+    } else {
+        exit(0);
     }
-   std::cerr << "There was an error when setting up the working directly dialog.\n";
-   exit(0);
-   return string();
-  }
+    
+}
 
-  void macSetCRYSDIR(const char* pPath)
-  {
-    string tResources = pPath;
-    tResources = "CRYSDIR=" + tResources + "/Crystals_Resources/";
-    putenv(tResources.c_str()); 
-  }
-#endif    
+
+void macSetCRYSDIR(string pPath)
+{
+    string tResources = "CRYSDIR=" + pPath + "/";
+    char * writable = new char[tResources.size() + 1];
+    std::copy(tResources.begin(), tResources.end(), writable);
+    writable[tResources.size()] = '\0'; // don't forget the terminating 0
+    // This will leak this much memory - but only once per program instance.
+    putenv(writable);
+}
+
+void CCrystalsApp::MacOpenFile(const wxString & fileName )
+{
+    if ( fileName.length() > 0 )
+    {
+        // we need a directory name. Look for last slash
+        string::size_type ils = fileName.find_last_of('/');
+        //Check: is there a directory name?
+        if ( ils != string::npos )
+            m_directory = fileName.substr(0,ils);
+        //Check: is there a dscfilename?
+        int remain = fileName.length() - ils - 1;
+        if ( remain > 0 )
+            m_dscfile = fileName.substr(ils+1,remain);
+    }
+
+//    wxMessageBox("open",fileName);
+}
+
+int CCrystalsApp::OnRun()
+{
+#if defined (CRY_OSMAC)
+    if ( ( m_dscfile.length() == 0) && ( m_directory.length() == 0 ) ) {
+        m_directory = macWorkingDir();
+        m_directory += "/";
+    }
+#endif
+//    wxMessageBox("run start",m_directory);
+//    wxMessageBox("run start",m_dscfile);
+    
+    
+#ifdef CRY_OSMAC
+    theControl = new CcController(m_directory,m_dscfile);
+#endif
+
+    kickTimer = new wxTimer(this, 5241);
+    kickTimer->Start(750);      //Call OnKickTimer every 1/2 second while idle.
+
+    
+    int ex = wxApp::OnRun();
+//    wxMessageBox("run end","fd");
+    return ex;
+}
+
+
+
+#endif
 
   bool CCrystalsApp::OnInit()
   {
-    string directory;
-    string dscfile;
+      
+      std::cerr << "In OnInit\n";
 
+      m_directory = "";   // Set these to be used in OnRun (Mac)
+      m_dscfile = "";
+      
+//    ostringstream strm;
+//    string temp;
+//    strm << argc;
+//    temp = strm.str();
+//    wxMessageBox("N Args", temp);
 
+// Find the CRYSDIR directory
+      
 #ifdef CRY_OSMAC
     UInt8 tPath[PATH_MAX];
-    if (getenv("FINDER") != NULL)
-      {
- 	directory = macWorkingDir();
-	directory += "/";
-      }
+//    if (getenv("FINDER") != NULL)
+//      {
+//      }
     CFURLGetFileSystemRepresentation(CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle()), true, tPath, PATH_MAX); 
     if (getenv("CRYSDIR") == NULL)
     {
@@ -351,7 +377,8 @@ using namespace std;
 #endif
 
 //    MessageBox(NULL,_T("Press OK to start"),_T("Pause for debug"),MB_OK);
-
+// Parse any command line arguments
+      
     for ( int i = 1; i < argc; i++ )
     {
       string command = string(argv[i]);
@@ -386,28 +413,37 @@ using namespace std;
           string::size_type ils = command.find_last_of('/');
 //Check: is there a directory name?
           if ( ils != string::npos )
-            directory = command.substr(0,ils);
+            m_directory = command.substr(0,ils);
 //Check: is there a dscfilename?
           int remain = command.length() - ils - 1;
           if ( remain > 0 )
-            dscfile = command.substr(ils+1,remain);
+            m_dscfile = command.substr(ils+1,remain);
         }
       }
 
-      std::cerr << "DSCfile to be opened: " << dscfile << "\n";
-      std::cerr << "Working directory:    " << directory << "\n";
+      std::cerr << "be opened: " << m_dscfile << "\n";
+      std::cerr << "Working directory:    " << m_directory << "\n";
 
     }
-    theControl = new CcController(directory,dscfile);
-   // kickTimer = new wxTimer(this, 5241);
-   // kickTimer->Start(500);      //Call OnKickTimer every 1/2 second while idle.
+      
+#ifndef CRY_OSMAC
+    theControl = new CcController(m_directory,m_dscfile);
+#endif
     return true;
   }
 
-  void CCrystalsApp::OnCrystCommand(wxEvent & event)
-  {
+void CCrystalsApp::OnKickTimer(wxTimerEvent & event)
+{
+//    std::cerr << "Command timer kick\n";
+    theControl->DoCommandTransferStuff();
+    
+}
+
+void CCrystalsApp::OnCrystCommand(wxEvent & event)
+{
+//    std::cerr << "Command kick\n";
 	theControl->DoCommandTransferStuff();
-  }
+}
 
   int CCrystalsApp::OnExit()
   {

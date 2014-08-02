@@ -2,7 +2,11 @@
 %  VARIABLE CHARACTER QTITLE BUTTOK BUTTXX QLINE1 QLINE2                        
 %  VARIABLE LOGICAL ANSWER LCRY T                                               
 %  VARIABLE INTEGER IRUN F67                                                    
-%  VARIABLE LOGICAL TWINNED MERGED DOCALC DOSCALE                               
+%  VARIABLE LOGICAL TWINNED MERGED DOCALC DOSCALE          
+#ifdef CRY_USEWX
+%  VARIABLE LOGICAL EDITOR_OK
+%  VARIABLE CHARACTER EDITOR_FILE                     
+#endif
 %  EVALUATE DOCALC = FALSE                                                      
 %  EVALUATE DOSCALE = FALSE                                                     
 %% variables used by the question box below                                     
@@ -142,8 +146,8 @@
 ^^WI DISPOSE FLIP                                                               
 ^^CR                                                                            
 %    IF ( VALUE .EQ. 1 ) THEN                                                   
+#ifndef CRY_USEWX
 %      COPY '#SPAWN +notepad.exe sflip.inflip'                                  
-%%++GILLIN% COPY '#SPAWN +nedit SFLIP.INFLIP'                                   
 %      EVALUATE QTITLE = 'Superflip Preparation'                                
 %      EVALUATE QLINE1 = 'Do you want to'                                       
 %      EVALUATE QLINE2 = 'run Superflip now?'                                   
@@ -152,7 +156,15 @@
 %      COPY '#SCRIPT XQUESTIO'                                                  
 %      IF ANSWER .EQ. FALSE THEN                                                
 %        FINISH                                                                 
-%      END IF                                                                   
+%      END IF  
+#else
+%      EVALUATE EDITOR_FILE = 'sflip.inflip'
+%      COPY '#SCRIPT XEDITOR'
+%      IF ( .NOT. EDITOR_OK ) THEN
+ User cancelled super flip run.
+%         FINISH
+%      END IF                                                                             
+#endif
 %    END IF                                                                     
 %    IF ( IRUN .EQ. 2 ) THEN                                                    
 %      FINISH                                                                   

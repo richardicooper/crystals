@@ -84,7 +84,7 @@ C      data infil /' '/
 C      data outfil /' '/
       io = -1
 #if defined(_GNUF77_)
-      call no_stdout_buffer()
+      call no_stdout_buffer_()
 #endif      
 cdjw open a file for errors since DOS window closes too fast
 c    lots of writes to 17 later

@@ -566,6 +566,7 @@ C--'VIBRATION' RESTRAINT
       ENDIF
 2300  FORMAT(/2X,2(10X,4HAtom,2X,A1,4X,15HS(I) L TX TY TZ,3X,2A4,A1),
      2 4X,5HDelta,A1,4X,8HCoord.'S)
+! '
       N=2
       GOTO 2500
 C

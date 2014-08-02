@@ -110,7 +110,7 @@ c     Make CCDC files the default
 c
       N = 1
 #if defined(_GNUF77_)
-      NARG = IARGC()
+      NARG = IARGC() + 1
 #else
       NARG = NARGS()
 #endif

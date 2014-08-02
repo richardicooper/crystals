@@ -3,27 +3,26 @@
 enable_language(Fortran)
 
 # add_definitions(-D_GIL_)
+if ( APPLE )
+add_definitions(-D_MAC_)
+add_definitions(-DCRY_OSMAC)
+else()
 add_definitions(-D_MIN_)
-add_definitions(-DCRY_GUI)
 add_definitions(-DCRY_OSWIN32)
+endif()
+
 add_definitions(-DCRY_GNU)
 add_definitions(-fno-sign-zero)
 add_definitions(-D_GNUF77_)
-#add_definitions(-D__WXMAC__)
-#add_definitions(-D__WXOSX__)
-#add_definitions(-D__WXOSX_COCOA__)
-#add_definitions(-D__WXUSINGDLL)
 add_definitions(-std=legacy)
 add_definitions(-fno-automatic)
 add_definitions(-fno-inline)
 add_definitions(-fexceptions)
 add_definitions(-D _HOL_)
 add_definitions(-I ../sleef)
-#add_definitions(-mmacosx-version-min=10.7)
 #add_definitions(-arch x86_64)
 
-
-add_library(CrystalsFortran OBJECT
+SET (cry_sources 
 solve_helper.F90
 mrgrnk.f90
 absorb.F
@@ -104,6 +103,13 @@ vcv.F
 weight.F
 lapack.F
 )
+
+
+if(CRY_NOGUI)
+add_library(CrystalsFortran SHARED ${cry_sources})
+else()
+add_library(CrystalsFortran OBJECT ${cry_sources})
+endif()
 
 
 SET_SOURCE_FILES_PROPERTIES(lapack.F PROPERTIES COMPILE_FLAGS -O0)

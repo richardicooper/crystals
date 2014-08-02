@@ -78,6 +78,8 @@
 
 #endif
 
+#include <string>
+
 class CcController;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -116,18 +118,24 @@ public:
     DECLARE_MESSAGE_MAP()
 
 #else
-//    wxTimer * kickTimer;
+    wxTimer * kickTimer;
 
 //    virtual void Activate(wxActivateEvent& event);
+    virtual void MacOpenFile(const wxString & fileName );
+    virtual int OnRun();
     virtual bool OnInit();
     virtual int OnExit();
 	virtual void OnCrystCommand(wxEvent & event);
+    void OnKickTimer(wxTimerEvent & event);
     DECLARE_EVENT_TABLE()
 
 #endif
 
     protected:
     CcController* theControl;
+    std::string m_directory;
+    std::string m_dscfile;
+    
 };
 
 #ifdef CRY_USEMFC

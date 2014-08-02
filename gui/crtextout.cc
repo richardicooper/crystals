@@ -18,6 +18,11 @@ using namespace std;
 #include    "cccontroller.h"
 #include    "cxtextout.h"
 
+#ifdef CRY_USEWX
+#include <wx/filename.h>
+#include <wx/mimetype.h>
+#endif
+
 
 CrTextOut::CrTextOut( CrGUIElement * mParentPtr )
  : CrGUIElement( mParentPtr )
@@ -163,7 +168,38 @@ void CrTextOut::CrFocus()
 
 void CrTextOut::ProcessLink( string aString )
 {
-      SendCommand("$ " + aString,TRUE);
+    std::cerr << "Launch string from text control is: " << aString << std::endl;
+    tstring lFirstTok = aString;
+    std::transform( lFirstTok.begin(), lFirstTok.end(), lFirstTok.begin(), ::tolower );
+    string::size_type match = lFirstTok.find(("http://"));
+    string::size_type matchs = lFirstTok.find(("https://"));
+    if ( match == 0 || matchs == 0 )     {  // it is an http url.
+        std::cerr << "It's a URL. Launching browser" << std::endl;
+        ::wxLaunchDefaultBrowser(aString);
+    } else {
+        wxFileName f(aString);
+        f.MakeAbsolute();
+        if ( f.FileExists() ) {
+            std::cerr << "File exists launching with " << f.GetFullPath() << std::endl;
+            wxFileType * filetype = wxTheMimeTypesManager->GetFileTypeFromExtension(f.GetExt());
+            wxString command;
+            if ( filetype && filetype->GetOpenCommand(&command, wxFileType::MessageParameters(aString,"") ) )
+            {
+//                line = string(command.c_str()) + " " + line;
+                std::cerr << "\nProcess link command link: " << command.c_str() << "\n";
+                long exr = wxExecute(command, wxEXEC_ASYNC, NULL);
+                std::cerr << "Return value was " << exr << std::endl;
+            }
+
+            
+//            ::wxLaunchDefaultBrowser(f.GetFullPath());
+        }
+        else{
+            std::cerr << "File does not exist" << std::endl;
+        }
+    }
+//    ::wxLaunchDefaultBrowser(aString);
+//    SendCommand("$ " + aString,TRUE);
 }
 
 void CrTextOut::ScrollPage(bool up)

@@ -777,12 +777,12 @@ CrGUIElement *  CrWindow::FindObject( const string & Name )
 {
     CrGUIElement * theElement = nil;
 
-    if (theElement = CrGUIElement::FindObject( Name )) //Assignment within conditional (OK)
+    if ((theElement = CrGUIElement::FindObject( Name ))) //Assignment within conditional (OK)
         return theElement;
 
     if ( mGridPtr != nil )
     {
-        if (theElement = mGridPtr->FindObject( Name ))  //Assignment (OK)
+        if ((theElement = mGridPtr->FindObject( Name )))  //Assignment (OK)
             return ( theElement );
     }
 

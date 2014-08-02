@@ -1,5 +1,6 @@
 #if !defined (CRY_USEMFC)
 
+#include <string>
 #include "crystalsinterface.h"
 #include "crystals.h"
 #include <wx/thread.h>

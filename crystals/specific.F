@@ -476,6 +476,8 @@ C
      1         ERR    = 3000 )
       ENDIF
 C
+      PRINT *, 'Open reports, IOS=', IOS, CLCNAM(1:NAMLEN)
+
       IF (IOS .NE. ISSOKF) GOTO 3000
 C
 C------ MAKE SURE WE ARE AT THE BEGINNING
@@ -487,6 +489,8 @@ C
 C
 3000  CONTINUE
 C
+      PRINT *, 'Open failed, IOS=', IOS, CLCNAM(1:NAMLEN)
+
 C -- OPEN FAILED -- IF IT SHOULD HAVE SUCCEEDED THEN THIS IS AN ERROR
 C
       IF ( ACSTAT .EQ. FLSTAT(ISSNEW) ) GO TO 9900
@@ -1152,7 +1156,7 @@ C----- A NULL STRING IS A PERMITTED RETURN VALUE IF THE PROGRAM IS RUN
 C      FROM THE DIRECTORY CONTAINING THE FILES
 C
 C -- RETURN VALUES :-
-C      1      NULL STRING
+C      0      NULL STRING
 C      ELSE    LENGTH
 C
       CHARACTER*(*) CPATH
@@ -1162,7 +1166,7 @@ C
       INCLUDE 'XSSVAL.INC'
       INCLUDE 'XDISCS.INC'
 C
-      KPATH = 1
+      KPATH = 0
       CPATH = ' '
       IF (KFLNAM( NCDFU, CNAME) .GT. 0) THEN
 #if defined(_H_P_) 
@@ -2844,12 +2848,12 @@ C on all platforms.
       END DO
 #endif
 
-c      WRITE(6,*) 'Looking for :', NAME(LEVEL)(1:NAMLEN(LEVEL))
+      WRITE(6,*) 'Looking for :', NAME(LEVEL)(1:NAMLEN(LEVEL))
 C TEST IF SOMETHING CAN BE DONE
 
       IF(COLPOS(LEVEL).LT.3) THEN   
 
-c        WRITE(6,*)'Inquiring: ',NAME(LEVEL)(1:NAMLEN(LEVEL))
+        WRITE(6,*)'Inquiring: ',NAME(LEVEL)(1:NAMLEN(LEVEL))
 
         IF(IWHAT.EQ.2) GOTO 9999
         INQNAM=NAME(LEVEL)(1:NAMLEN(LEVEL))
@@ -2908,17 +2912,17 @@ CNOV98 IF THERE IS NO ENVIRONMENT VARIABLE, CHECK THE PRESETS
         LSTPOS(LEVEL)=0
         LSTLEN(LEVEL)=KSTRLN(LIST(LEVEL))
 
-c        WRITE(6,*) 'Environment ',LEVEL,'  "',
-c     &    NAME(LEVEL)(1:COLPOS(LEVEL)-1),'"  = "',
-c     &    LIST(LEVEL)(1:LSTLEN(LEVEL)),'"'
+        WRITE(6,*) 'Environment ',LEVEL,'  "',
+     &    NAME(LEVEL)(1:COLPOS(LEVEL)-1),'"  = "',
+     &    LIST(LEVEL)(1:LSTLEN(LEVEL)),'"'
       ENDIF
 
 C TEST LIST FOR SOMETHING TO PROCESS
 
 3     CONTINUE
 
-c      WRITE(6,*) 'Testing ',LEVEL,'  "',
-c     &  NAME(LEVEL)(1:NAMLEN(LEVEL)),'"'
+      WRITE(6,*) 'Testing ',LEVEL,'  "',
+     &  NAME(LEVEL)(1:NAMLEN(LEVEL)),'"'
 
       IF((LSTPOS(LEVEL).GE.LSTLEN(LEVEL))
      &  .OR.((LSTPOS(LEVEL).GT.0).AND.(IWHAT.EQ.2))) THEN
@@ -2944,8 +2948,8 @@ c     &  NAME(LEVEL)(1:NAMLEN(LEVEL)),'"'
         LSTPOS(LEVEL)=INDEX(LIST(LEVEL)(J:LSTLEN(LEVEL)),',')+J-1
         IF(LSTPOS(LEVEL).EQ.(J-1)) LSTPOS(LEVEL)=LSTLEN(LEVEL)+1
 
-c         WRITE(6,*)
-c     1 'Extracted     "',LIST(LEVEL)(J:LSTPOS(LEVEL)-1),'"'
+         WRITE(6,*)
+     1 'Extracted     "',LIST(LEVEL)(J:LSTPOS(LEVEL)-1),'"'
         K=LSTPOS(LEVEL)-J
         NAME(LEVEL+1)(1:K)=LIST(LEVEL)(J:LSTPOS(LEVEL)-1)
 
@@ -2993,7 +2997,7 @@ C
         FILNAM(I:I)=' '
 8888  CONTINUE
       LENNAM = KSTRLN(FILNAM)
-c      WRITE(6,*) 'MTRNLG: Output="',FILNAM(1:LENNAM),'"'
+      WRITE(6,*) 'MTRNLG: Output="',FILNAM(1:LENNAM),'"'
 c      WRITE(CMON,*) 'MTRNLG: Output="',FILNAM(1:LENNAM),'"'
 c      CALL XPRVDU(NCVDU,1,0)
 

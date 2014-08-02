@@ -92,7 +92,11 @@
 %      IF ( IRUN .EQ. 2 ) THEN                                                  
 %           FINISH                                                              
 %      END IF                                                                   
+#ifdef CRY_USEWX
+%      COPY '#SPAWN % "CRYSDIR:shelxs"' 
+#else
 %      COPY '#SPAWN % "CRYSDIR:shelxs.exe"'                                     
+#endif
 %      COPY '#TYPE shelxs.lis'                                                  
 %   END BLOCK                                                                   
 %   BLOCK                                                                       

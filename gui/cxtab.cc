@@ -215,7 +215,7 @@ void CxTab::LetGoOfTabs()
   int pc = GetPageCount();
   for ( int i = pc-1; i>=0; i-- )
   {
-    RemovePage(i); //Removes page, but without deleting the
+    RemovePage(0); //Removes page, but without deleting the
                    //associated window.
 //NB. Remove pages last first as the index changes each time.
   }

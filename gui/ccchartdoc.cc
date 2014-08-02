@@ -523,7 +523,11 @@ void CcChartDoc::FastText( const int &x, const int &y,
       }
       else
       {
+#ifdef CRY_USEWX
          yoffs = - ((double) fs) * 13.333;
+#else
+         yoffs = - ((double) fs) * 4.0;
+#endif
          xoffs = yoffs * 10;
          item->Init(x, y, x+xoffs, y+yoffs, text , false );
       }

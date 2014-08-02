@@ -228,6 +228,7 @@ CxPlot *   CxPlot::CreateCxPlot( CrPlot * container, CxGrid * guiParent )
     theStdPlot->m_newMemDCBitmap = new wxBitmap(10,10);
     theStdPlot->m_memDC->SelectObject(*(theStdPlot->m_newMemDCBitmap));
     theStdPlot->m_memDC->SetBrush( *wxWHITE_BRUSH );
+    theStdPlot->m_memDC->SetFont( *wxNORMAL_FONT);
     theStdPlot->m_memDC->Clear();
 #endif
     return theStdPlot;
@@ -625,9 +626,11 @@ void CxPlot::DrawText(int x, int y, string text, int param, int fontsize)
       m_memDC->SetBackgroundMode( wxTRANSPARENT );
       int tx, ty, mx, my;
 
+      m_memDC->SetFont( *wxNORMAL_FONT);
+
       wxFont aFont = m_memDC->GetFont();
 
-      aFont.SetPointSize(fontsize/2);
+      aFont.SetPointSize(fontsize);
       m_memDC->SetFont(aFont);
 
 
@@ -734,6 +737,7 @@ CcPoint CxPlot::GetTextArea(int fontsize, string text, int param)
 
     int cx,cy,cs;
 
+    m_memDC->SetFont( *wxNORMAL_FONT);
     wxFont aFont = m_memDC->GetFont();
     aFont.SetPointSize(fontsize/2);
     m_memDC->SetFont(aFont);

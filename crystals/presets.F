@@ -1641,6 +1641,8 @@ C
       DATA ISSFNF / 128 /
 #elif defined(CRY_NONGNU) || defined(_VAX_) 
       DATA ISSFNF /  29 /
+#elif defined(CRY_OSMAC)
+      DATA ISSFNF /  2 /
 #elif defined(CRY_GNU)
       DATA ISSFNF /  2 /
 #else

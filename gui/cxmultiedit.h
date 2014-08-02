@@ -50,8 +50,8 @@
  #include <afxwin.h>
  #define BASEMULTIEDIT CRichEditCtrl
 #else
- #include <wx/textctrl.h>
- #define BASEMULTIEDIT wxTextCtrl
+ #include <wx/stc/stc.h>
+ #define BASEMULTIEDIT wxStyledTextCtrl
 #endif
 
 
@@ -87,6 +87,7 @@ class CxMultiEdit : public BASEMULTIEDIT
         void            SetGeometry(int top, int left, int bottom, int right );
 
         void            SaveAs(string filename);
+        void            Load(string filename);
 
 
     private:

@@ -71,6 +71,11 @@ using namespace std;
 #include    "crgrid.h"
 
 #ifdef CRY_USEWX
+enum
+{
+    MARGIN_LINE_NUMBERS,
+    MARGIN_FOLD
+};
 // These macros are being defined somewhere. They shouldn't be.
 
  #ifdef GetCharWidth
@@ -92,7 +97,8 @@ CxMultiEdit *   CxMultiEdit::CreateCxMultiEdit( CrMultiEdit * container, CxGrid 
         theMEdit->ModifyStyleEx(NULL,WS_EX_CLIENTEDGE,0);
         theMEdit->Init();
 #else
-        theMEdit->Create(guiParent, -1, "EditBox", wxPoint(0,0), wxSize(10,10), wxTE_MULTILINE);
+       theMEdit->Create(guiParent, -1, wxPoint(0,0), wxSize(10,10), 0 , "CRYSTALS Editor");
+        theMEdit->Init();
 #endif
         return theMEdit;
 }
@@ -221,8 +227,8 @@ END_MESSAGE_MAP()
 #endif
 #ifdef CRY_USEWX
 //wx Message Table
-BEGIN_EVENT_TABLE(CxMultiEdit, wxTextCtrl)
-      EVT_CHAR( CxMultiEdit::OnChar )
+BEGIN_EVENT_TABLE(CxMultiEdit, wxStyledTextCtrl)
+//      EVT_CHAR( CxMultiEdit::OnChar )
 END_EVENT_TABLE()
 #endif
 
@@ -249,29 +255,6 @@ void CxMultiEdit::OnChar( UINT nChar, UINT nRepCnt, UINT nFlags )
     }
 }
 #endif
-#ifdef CRY_USEWX
-void CxMultiEdit::OnChar( wxKeyEvent & event )
-{
-      switch(event.GetKeyCode())
-    {
-        case 9:     //TAB. Shift focus back or forwards.
-        {
-                  bool shifted = event.m_shiftDown;
-            ptr_to_crObject->NextFocus(shifted);
-            break;
-        }
-        default:
-        {
-            if(ptr_to_crObject->mDisabled)
-                        ptr_to_crObject->FocusToInput((char)event.GetKeyCode());
-            else
-                        event.Skip();
-                  break;
-        }
-    }
-}
-#endif
-
 
 
 void CxMultiEdit::Spew()
@@ -352,30 +335,60 @@ void CxMultiEdit::Init()
 
 
 #ifdef CRY_USEWX
-    wxFont* pFont = new wxFont(12,wxMODERN,wxNORMAL,wxNORMAL);
-#ifndef _WINNT
-    *pFont = wxSystemSettings::GetFont( wxSYS_ANSI_FIXED_FONT );
-#else
-   *pFont = wxSystemSettings::GetFont( wxDEVICE_DEFAULT_FONT );
-#endif  // !_WINNT
+    wxFont* pFont = new wxFont(12,wxFONTFAMILY_MODERN,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+//   wxFont* pFont = new wxFont(12,wxMODERN,wxNORMAL,wxNORMAL);
+//#ifndef _WINNT
+//    *pFont = wxSystemSettings::GetFont( wxSYS_ANSI_FIXED_FONT );
+//#else
+//   *pFont = wxSystemSettings::GetFont( wxDEVICE_DEFAULT_FONT );
+//#endif  // !_WINNT
 
-    string temp;
-    temp = (CcController::theController)->GetKey( "FontInfo" );
-    if ( temp.length() ) pFont->SetNativeFontInfo( temp.c_str() );
+//    string temp;
+//    temp = (CcController::theController)->GetKey( "FontInfo" );
+//    if ( temp.length() ) pFont->SetNativeFontInfo( temp.c_str() );
 
 	/*temp = (CcController::theController)->GetKey( "FontHeight" );
     if ( temp.length() )  pFont->SetPointSize( CRMAX( 2, atoi( temp.c_str() ) ) );
     temp = (CcController::theController)->GetKey( "FontFace" );
     if ( temp.length() )  pFont->SetFaceName( temp.c_str() );*/
-    SetFont ( *pFont );
+//    SetFont ( *pFont );
+    
+    SetMarginWidth (MARGIN_LINE_NUMBERS, 50);
+    StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour (75, 75, 75) );
+    StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour (220, 220, 220));
+    SetMarginType (MARGIN_LINE_NUMBERS, wxSTC_MARGIN_NUMBER);
+
+    StyleSetFont 	(  0, *pFont );
+    StyleSetFont 	(  1, *pFont );
+    
+    
+    /*
+    SetProperty (wxT("font"),             wxT("font:courier,size:12") );
+    SetProperty (wxT("font.base"),             wxT("font:courier,size:12") );
+    SetProperty (wxT("font.small"),            wxT("font:courier,size:12") );
+    SetProperty (wxT("font.comment"),          wxT("font:courier,size:12") );
+    SetProperty (wxT("font.text"),             wxT("font:courier,size:12") );
+    SetProperty (wxT("font.text.comment"),     wxT("font:courier,size:12") );
+    SetProperty (wxT("font.embedded.base"),    wxT("font:courier,size:12") );
+    SetProperty (wxT("font.embedded.comment"), wxT("font:courier,size:12") );
+    SetProperty (wxT("font.vbs"),              wxT("font:courier,size:12") );
+    */
+//    SetFont( wxSystemSettings::GetFont( wxSYS_ANSI_FIXED_FONT ));
 #endif
 
 }
+
 
 #ifdef CRY_USEWX
 void CxMultiEdit::SaveAs(string filename)
 {
     SaveFile( filename.c_str() );
+}
+void CxMultiEdit::Load(string filename)
+{
+        ClearAll();
+        LoadFile( filename.c_str() );
+        ClearSelections();
 }
 #endif
 

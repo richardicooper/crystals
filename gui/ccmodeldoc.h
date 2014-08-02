@@ -110,6 +110,9 @@
 #ifdef CRY_USEMFC
  #include <GL/glu.h>
  #include <GL/gl.h>
+#elif defined(CRY_OSMAC)
+ #include <wx/glcanvas.h>
+ #include <OpenGL/glu.h>
 #else
  #include <wx/glcanvas.h>
  #include <GL/glu.h>

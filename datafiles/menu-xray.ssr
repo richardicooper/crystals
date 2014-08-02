@@ -28,14 +28,12 @@
 ^^WI     ITEM XCIF  'Import Structural (CSD) cif file'
 ^^WI              '#SCRIPT CIF2CRY' DISABLEIF='IN'
 ^^WI     MENU _SX 'Cell, SG radiation or formula'
-
 ^^WI      ITEM _XIN1 'Input/Edit Cell' '#SCRIPT XCELLIN'      DISABLEIF='IN'
 ^^WI      ITEM _XIN2 'Input/Edit Space Group' '#SCRIPT XSPACE'  DISABLEIF='IN'
 ^^WI      ITEM _XIN3 'Input/Edit Formula / Radiation' '#SCRIPT XINLIST3'
 ^^WI              DISABLEIF='IN'
 ^^WI     ENDMENU
 ^^WI   SPLIT
-
 ^^WI   MENU _EXPORT 'File export'
 ^^WI    ITEM EXPORT 'Enable auto-export' '#SET EXPORT ON' DISABLEIF='IN'
 ^^WI    ITEM ATOMS 'Export coordinates' '#SCRIPT XPCH5' 

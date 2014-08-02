@@ -157,9 +157,17 @@ class   CcController
 
   private:
 
+    
+    
     void AddCrystalsCommand(const string &line , bool jumpQueue = false); // Called by SendCommand
     bool GetInterfaceCommand( string & line );                    // Called by DoCommandTransferStuff
     void GetValue (deque<string> & tokenlist);
+    
+    void Execute(deque<string> & execStrings);
+    void ExecWait(string & execstr);
+    void ExecRedir(string & execstr);
+    void Exec(string & execstr);
+    bool replace(std::string& str, const std::string& from, const std::string& to);
 
     deque<string>    mQuickTokenList;
     deque<string>    mWindowTokenList;
@@ -274,6 +282,7 @@ class CcPipe {
 #define kSTitleOnly    "TITLEONLY"
 #define kSGetRegValue      "GETREG"
 #define kSGetKeyValue      "GETKEY"
+#define kSExecValue      "EXEC"
 #define kSSetKeyValue      "SETKEY"
 
 #define kSWindowSelector    "WI"
@@ -285,6 +294,7 @@ class CcPipe {
 #define kSStatusSelector    "ST"
 #define kSQuerySelector     "??"
 #define kSWaitControlSelector "CW"
+#define kSExecSelector      "!!"
 
 #define kSFocus               "FOCUS"
 #define kSFontSet             "FONT"
@@ -318,7 +328,8 @@ enum
  kTOpenGroup,
  kTBatch,
  kTCloseGroup,
- kTGetRegValue
+    kTGetRegValue,
+    kTExecValue
 };
 #endif
 

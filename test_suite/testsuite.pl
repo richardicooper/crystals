@@ -32,7 +32,7 @@ if ( $windows ) {
 
 $CRYSHOME = $CRYSDIR;
 $CRYSHOME =~ s/.*,//g;                 # Remove owt before comma, repeatedly.
-$CRYSEXE = $CRYSHOME . "crystals";    # Append exe name
+$CRYSEXE = $CRYSHOME . "../MacOS/crystals ./";    # Append exe name
 #$CRYSEXE = $CRYSHOME . "crystalsd";  # Append debug exe name
 $exitcode=0;
 

@@ -266,7 +266,7 @@ bool    CxToolBar::AddTool( CcTool* newTool )
 //   LOGERR("Adding App icon");
     if ( mycon.Ok() )
     {
-      m_ToolBar->AddTool(newTool->CxID, mycon, newTool->tText.c_str());
+      m_ToolBar->AddCheckTool(newTool->CxID, newTool->tText.c_str(), mycon, wxNullBitmap, newTool->tText.c_str());
 //      m_ToolBar->AddTool(newTool->CxID, mycon, "Text");
       m_ToolBar->Realize();
       m_ImageIndex++;
@@ -337,11 +337,15 @@ bool    CxToolBar::AddTool( CcTool* newTool )
 //          m_ToolBar->AddTool(newTool->CxID, "text", 
 			                 //mymap, wxEmptyString, 
 							 //(newTool->toggleable ? wxITEM_CHECK : wxITEM_NORMAL) );
-          m_ToolBar->AddTool(newTool->CxID, newTool->tText.c_str(), 
-			                 mymap, wxEmptyString, 
-							 (newTool->toggleable ? wxITEM_CHECK : wxITEM_NORMAL) );
+            if (newTool->toggleable) {
+                m_ToolBar->AddCheckTool(newTool->CxID, newTool->tText.c_str(),
+			                 mymap, wxNullBitmap, newTool->tText.c_str());
+            } else {
+                m_ToolBar->AddCheckTool(newTool->CxID, newTool->tText.c_str(),
+                                   mymap, wxNullBitmap, newTool->tText.c_str());
+            }
 
-//		  if ( newTool->toggleable ) { 
+//		  if ( newTool->toggleable ) {
 //			ostringstream strstrm;
 //			strstrm << "Made " << (newTool->toggleable ? " toggle " : " non-toggle ") << "item: " << newTool->CxID;
 //			LOGERR(strstrm.str() );
@@ -350,7 +354,8 @@ bool    CxToolBar::AddTool( CcTool* newTool )
 
 		  m_ToolBar->Realize();
           m_ImageIndex++;
-          m_totWidth += 23;
+            //          m_totWidth += 23;
+          m_totWidth += m_ToolBar->GetToolSize().GetWidth();
         }
       }
       else if ( i >= nEnv )
@@ -446,7 +451,7 @@ int CxToolBar::GetIdealWidth()
 //   LOGERR ( os.str() );
 //   return ( m_totWidth ) + 50;
 	m_ToolBar->SetSize(0, 0, wxDefaultCoord, wxDefaultCoord);
-	return m_ToolBar->GetSize().x;
+	return m_ToolBar->GetSize().GetWidth();
 #endif
 }
 
@@ -458,7 +463,7 @@ int CxToolBar::GetIdealHeight()
    return CRMIN(200,tbs.cy+2);
 #endif
 #ifdef CRY_USEWX
-     return m_ToolBar->GetSize().y;
+     return m_ToolBar->GetSize().GetHeight();
 //   return 15 + 10;
 #endif
 }
@@ -588,9 +593,9 @@ void CxToolBar::CheckTool(bool check, int id)
 #endif
 #ifdef CRY_USEWX
  m_ToolBar->ToggleTool(id, check);
-// ostringstream strstrm;
- //strstrm << id;
-// LOGERR((check? "Checked " : "Unchecked " ) + strstrm.str() );
+ ostringstream strstrm;
+strstrm << id;
+ LOGERR((check? "Checked " : "Unchecked " ) + strstrm.str() );
 #endif
 }
 

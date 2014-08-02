@@ -16,7 +16,11 @@
 #include    "creditbox.h"
 #include    "cccontroller.h"
 #include    "resource.h"
+#ifdef CRY_OSMAC
+#include    <OpenGL/glu.h>
+#else
 #include    <GL/glu.h>
+#endif
 #ifdef CRY_USEWX
   #include "idb_splash.xpm"
 #endif
@@ -91,7 +95,8 @@ CxModel * CxModel::CreateCxModel( CrModel * container, CxGrid * guiParent )
   theModel->Setup();
 
 #else
-  int args[] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0};
+  int args[] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 4, 0};
+//  int args[] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0};
   CxModel *theModel = new CxModel((wxWindow*)guiParent, args);
   theModel->ptr_to_crObject = container;
   theModel->Show();

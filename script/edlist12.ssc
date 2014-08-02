@@ -24,8 +24,14 @@
 %%
 %  VARIABLE LOGICAL ISERR
 %%
+#ifdef CRY_USEWX
+% VARIABLE LOGICAL EDITED_ONCE
+% EVALUATE EDITED_ONCE = FALSE
+#endif
+%%
 %  LOOP
 %%
+#ifndef CRY_USEWX
 ^^WI WINDOW BLOCK12 'Waiting' MODAL CANCEL='^^CO DISPOSE BLOCK12'
 ^^WI GRID MAIN NROWS=4 NCOLS=3 { @ 2,2 STATIC T1 'Starting editor...'
 ^^WI @ 3,2 STATIC T1 'Close notepad to continue.' } SHOW
@@ -45,6 +51,22 @@
 {I Cannot edit constraints. Maybe a reinstall of CRYSTALS would help.
 %      FINISH
 %    END IF
+#else
+%    VARIABLE CHARACTER EDITOR_FILE
+%    VARIABLE LOGICAL EDITOR_OK
+%    EVALUATE EDITOR_FILE = 'scplst12.dat'
+%    COPY '#SCRIPT xeditor'
+%    IF ( .NOT. EDITOR_OK ) THEN
+%      IF ( EDITED_ONCE ) THEN
+%        COPY '#USE scporg12.dat'
+ Original list 12 restored.
+%      ELSE
+ Changes abandoned by user. List 12 has not been changed.
+%      END IF
+%      FINISH
+%    END IF
+%    EVALUATE EDITED_ONCE = TRUE
+#endif
 %%
 %    EVALUATE ISERR = TRUE
 %    BLOCK

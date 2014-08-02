@@ -48,12 +48,13 @@ C Added changelog to top of file
 C
 C
 CODE FOR CRYSTL
-C      winapp 500000,1000000
-#ifdef CRY_GUI 
+C Entry point for GUI C++ routines.
       SUBROUTINE CRYSTL() bind (c)
-#else 
-      PROGRAM CRYSTL
-#endif
+      CALL CRYSTAL()
+      END
+
+C Entry point for command line and library use.
+      SUBROUTINE CRYSTAL()
 C
 C
 C     ******************************************************

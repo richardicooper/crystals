@@ -85,7 +85,10 @@ CrTab::~CrTab()
 //windows from the control of the wxNotebook, so that when it is
 //deleted, it has no child windows to delete.
 
-       ((CxTab*)ptr_to_cxObject)->LetGoOfTabs();
+#ifndef CRY_OSMAC
+    ((CxTab*)ptr_to_cxObject)->LetGoOfTabs();
+#endif
+
 #endif
 
     list<CrGrid*>::iterator crgi = mTabsList.begin();

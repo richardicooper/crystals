@@ -105,7 +105,11 @@
 #include        "crcheckbox.h"
 #include        "crchart.h"
 #include        "crplot.h"
+#ifdef CRY_OSMAC
+#include        <OpenGL/glu.h>
+#else
 #include        <GL/glu.h>
+#endif
 #include        "crmodel.h"
 #include        "crradiobutton.h"
 #include        "crwindow.h"

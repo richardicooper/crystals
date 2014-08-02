@@ -164,8 +164,8 @@ data reduction.  A large ratio for weak reflection bins may indicate
 an incorrect space group (see Walker et al, Acta Cryst (1999) B55, 
 607-616) 
 
-When suitable weights have been applied, the weighted residual
-- w(Fo^2-Fc^2) - should be approximately constant across the chart, 
+When suitable weights have been applied, the weighted residual,
+w(Fo^2-Fc^2), should be approximately constant across the chart, 
 though there may be deviations for bins containing only a few 
 reflections.
 

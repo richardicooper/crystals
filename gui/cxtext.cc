@@ -118,7 +118,7 @@ int CxText::GetIdealWidth()
 #ifdef CRY_USEWX
       int cx,cy;
       GetTextExtent( GetLabel(), &cx, &cy );
-      return cx;
+      return cx + 8;
 #endif
 
 }

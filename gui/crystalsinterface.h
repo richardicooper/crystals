@@ -284,11 +284,12 @@ enum {
 #define CRESCAPE  7
 #define CRCONTROL 8
 #define CRSHIFT   9
-#define COVALENT    1
-#define VDW       2
-#define THERMAL   3
-#define SPARE     4
-#define TINY      5
+
+#define CRCOVALENT    1
+#define CRVDW       2
+#define CRTHERMAL   3
+#define CRSPARE     4
+#define CRTINY      5
 
 
 

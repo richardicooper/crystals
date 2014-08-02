@@ -31,11 +31,29 @@
 ^^WI         TOOL _MRC 'mercury.bmp' 'Mercury' '#SCRIPT MERCURY'                
 ^^WI          DISABLEIF='IN'                                                    
 ^^WI         SPLIT                                                              
+#ifdef CRY_OSWIN32
 ^^WI         TOOL _MNP 'notepad.bmp' 'Notepad' '$notepad'                       
+#else
+^^WI         TOOL _MNP 'notepad.bmp' 'Editor' '$textedit'
+#endif
 ^^WI          DISABLEIF='IN'                                                    
--GIL^^WI TOOL _MCM 'pifmgr.dll' 'Command' '$"CRYSDIR:oshell.bat" P'         
--GIL^^WI  APPICON DISABLEIF='IN'                                            
+#ifdef CRY_OSWIN32
+^^WI TOOL _MCM 'pifmgr.dll' 'Command' '$"CRYSDIR:oshell.bat" P'         
+^^WI  APPICON DISABLEIF='IN'                                            
+#else
+^^WI TOOL _MCM 'test.bmp' 'Command' 
+^^WI '$"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal /System/" P'         
+^^WI          DISABLEIF='IN'                                            
+#endif
+#ifdef CRY_OSWIN32
 ^^WI         TOOL _MEX 'explorer.bmp' 'Explore' '$explorer ./'                  
+#else
+#if  CRY_OSMAC
+^^WI         TOOL _MEX 'explorer.bmp' 'Finder' '$open ./'                  
+#else
+^^WI         TOOL _MEX 'explorer.bmp' 'Open folder' '$open ./' 
+#endif
+#endif
 ^^WI          DISABLEIF='IN'                                                    
 ^^WI         SPLIT                                                              
 ^^WI         TOOL _MHL 'tool_help.bmp' 'Help'                                   

@@ -1,12 +1,12 @@
 
-set(wxWidgets_CONFIG_EXECUTABLE /Users/richard.cooper/wxWidgets-2.9.5/b2/wx-config)
-		    
+#set(wxWidgets_CONFIG_EXECUTABLE /Users/richard.cooper/wxWidgets-2.9.5/b2/wx-config)		    
 
 add_definitions(-D_GNUF77_)
 
 if(APPLE)
 add_definitions(-D__WXMAC__)
 add_definitions(-D__WXOSX__)
+add_definitions(-D__MAC__)
 else()
 add_definitions(-D__MIN__)
 add_definitions(-D_UNICODE)
@@ -30,6 +30,7 @@ SET(CMAKE_OSX_SYSROOT "/Applications/Xcode.app/Contents/Developer/Platforms/MacO
 #add_definitions("-std=gnu++11")
 #add_definitions("-mmacosx-version-min=10.7")
 #add_definitions("-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 ENDIF(APPLE)
 

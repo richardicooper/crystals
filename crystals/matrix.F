@@ -2477,7 +2477,7 @@ C The following level 2 BLAS routines are only required on digital build. All ot
 C use optimsed, external libraries. (MKL or OpenBLAS)
 
 
-#if defined (_GID_) || defined(_WXS_)  || defined (_MIN_)
+#if defined (CRY_OSWIN32) || defined (CRY_OSMAC)
 
 
 C     File of the REAL              Level 2 BLAS routines:  

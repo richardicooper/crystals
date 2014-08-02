@@ -30,8 +30,14 @@
 %%
 %  VARIABLE LOGICAL ISERR
 %%
+#ifdef CRY_USEWX
+%  VARIABLE LOGICAL EDITED_ONCE
+%  EVALUATE EDITED_ONCE = FALSE
+#endif
+%%
 %  LOOP
 %%
+#ifndef CRY_USEWX
 ^^WI WINDOW BLOCK16 'Waiting' MODAL CANCEL='^^CO DISPOSE BLOCK16'
 ^^WI GRID MAIN NROWS=4 NCOLS=3 { @ 2,2 STATIC T1 'Starting editor...'
 ^^WI @ 3,2 STATIC T1 'Close notepad to continue.' } SHOW
@@ -52,6 +58,22 @@
 {I Cannot edit restraints. Maybe a reinstall of CRYSTALS would help.
 %      FINISH
 %    END IF
+#else
+%    VARIABLE CHARACTER EDITOR_FILE
+%    VARIABLE LOGICAL EDITOR_OK
+%    EVALUATE EDITOR_FILE = 'scplst16.dat'
+%    COPY '#SCRIPT xeditor'
+%    IF ( .NOT. EDITOR_OK ) THEN
+%      IF ( EDITED_ONCE ) THEN
+%        COPY '#USE scporg16.dat'
+ Original list 16 restored.
+%      ELSE
+ Changes abandoned by user. List 16 has not been changed.
+%      END IF
+%      FINISH
+%    END IF
+%    EVALUATE EDITED_ONCE = TRUE
+#endif
 %%
 %    EVALUATE ISERR = TRUE
 %    BLOCK

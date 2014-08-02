@@ -48,8 +48,13 @@
 %   END IF
 %  END BLOCK
 %%
+#ifndef CRY_USEWX
 %  CLEAR
--GIL%    INSERT '#use crysdir:script\vulist6.dat'
-+GIL%    INSERT '#use crysdir:script/vulist6.dat'
+%  INSERT '#use crysdir:script\vulist6.dat'
 %  SEND
+#else
+%  VARIABLE CHARACTER READER_FILE
+%  EVALUATE READER_FILE = 'SCPLST6.DAT'
+%  COPY '#SCRIPT XREADER'
+#endif
 %END SCRIPT

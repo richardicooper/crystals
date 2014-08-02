@@ -644,7 +644,11 @@ using namespace std;
 
 #include    "crwindow.h"
 #include    "crmenu.h"
-#include    <GL/glu.h>
+#ifdef CRY_OSMAC
+  #include <wx/glcanvas.h>
+#else
+  #include    <GL/glu.h>
+#endif
 #include    "crmodel.h"
 #include    "crchart.h"
 #include    "crbutton.h"
@@ -705,7 +709,6 @@ using namespace std;
     #include <sys/wait.h>
     #include <fcntl.h>
     #include <unistd.h>
-    CcThread * CcController::mCrystalsThread = nil;
   #endif
   
   #ifdef CRY_GNU
@@ -826,7 +829,7 @@ CcController::CcController( const string & directory, const string & dscfile )
       i++;
       string buffer = dir + "guimenu.srt" ;
 
-      if( file = fopen( buffer.c_str(), "r" ) ) //Assignment witin conditional - OK
+      if( (file = fopen( buffer.c_str(), "r" ) ) ) //Assignment witin conditional - OK
       {
         ReadStartUp(file,crysdir);
         noLuck = false;
@@ -956,7 +959,6 @@ CcController::CcController( const string & directory, const string & dscfile )
 ****/
 
 
-
 // If the CRDSC variable is set, leave it's value the same.
 // Otherwise, set it to the default value of CRFILEV2.DSC
     char* envv;
@@ -987,6 +989,9 @@ CcController::CcController( const string & directory, const string & dscfile )
     LOGSTAT( "Starting Crystals Thread" );
     
     StartCrystalsThread();
+    
+//    wxMessageBox("Debug","Started CRYSTALS");
+
 
     LOGSTAT ( "Crystals thread started.\n") ;
 }
@@ -1026,7 +1031,7 @@ void CcController::ReadStartUp( FILE * file, string & crysdir )
           string dir = EnvVarExtract( crysdir, i++ );
           string buffer = dir + inputline ;
           LOGSTAT("Trying: "+buffer);
-          if( newfile = fopen( buffer.c_str(), "r" ) ) //Assignment witin conditional - OK
+          if( (newfile = fopen( buffer.c_str(), "r" ) ) ) //Assignment witin conditional - OK
           {
             LOGSTAT("Success, reading file");
             ReadStartUp( newfile, crysdir );
@@ -1122,6 +1127,16 @@ CcController::~CcController()       //The destructor. Delete all the heap object
 		 delete mCrystalsThread;
 
 }
+
+
+bool CcController::replace(std::string& str, const std::string& from, const std::string& to) {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
 
 bool CcController::ParseInput( deque<string> & tokenList )
 {
@@ -1579,6 +1594,13 @@ bool CcController::ParseInput( deque<string> & tokenList )
                 tokenList.pop_front();
                 break;
             }
+            case kTExecValue:
+            {
+                tokenList.pop_front();
+                Execute( tokenList );
+                tokenList.pop_front();
+                break;
+            }
             case kTSetStatus:
             {
                 tokenList.pop_front();
@@ -1718,6 +1740,18 @@ void    CcController::Tokenize( const string & cText )
             LOGSTAT ( "CW complete, unlocking output queue.");
             m_Complete_Signal.Signal();
         }
+        else if ( selector.compare(kSExecSelector) == 0 )
+        {
+            mTempTokenList = mCurTokenList;
+            mCurTokenList  = &mQuickTokenList;
+            MakeTokens( cText.substr(chop,cText.length()-chop), *mCurTokenList);
+//            while ( ParseInput( mQuickTokenList ) );
+            Execute( mQuickTokenList );
+            mCurTokenList  = mTempTokenList;
+            //We must now signal the waiting Crystals thread that we're complete.
+            LOGSTAT ( "!! complete, unlocking output queue.");
+            m_Complete_Signal.Signal();
+        }
         else if ( selector.compare(kSOneCommand) == 0 )
         {                                                                                                                                //Avoids breaking up (and corrupting) the incoming streams from scripts.
             mTempTokenList = mCurTokenList;
@@ -1839,7 +1873,8 @@ void  CcController::AddInterfaceCommand( const string &line, bool internal )
       {
         string selector = line.substr(chop-2,2);
         if ( !internal && (( selector.compare(kSQuerySelector)      ==0) || 
-                           ( selector.compare(kSWaitControlSelector)==0)    ) )
+                           ( selector.compare(kSWaitControlSelector)==0) ||
+                           ( selector.compare(kSExecSelector)       ==0)   ) )
         {
           lock = true; // Don't return from here until 
                        // this query is answered.
@@ -1905,20 +1940,16 @@ bool CcController::GetInterfaceCommand( string &line )
       LOGSTAT("The CRYSTALS thread has ended.");
       mThisThreadisDead = true;
       LOGSTAT("Shutting down this (GUI) thread.");
-#ifdef CRY_USEMFC
       line = "^^CO DISPOSE _MAIN ";
       return (true);
-#else
-      line = "^^CO DISPOSE _MAIN ";
-      return (true);
-//      ::wxExit();
-//      LOGSTAT("App did not exit...");
-#endif
   }
   
   try
   {
-	line = mInterfaceCommandDeq.pop_front(0);
+      if ( mInterfaceCommandDeq.size() == 0 )
+          return false;
+      
+      line = mInterfaceCommandDeq.pop_front(0);
 //    ostringstream os;
 //    os << "GUI gets (rem: " << mInterfaceCommandDeq.size() << ": " << line;
 //    LOGSTAT(os.str());
@@ -1929,6 +1960,10 @@ bool CcController::GetInterfaceCommand( string &line )
   {
     line = "" ;
     return (false);
+  }
+  catch ( ... ) {
+     //anything else
+      return false;
   }
 }
 
@@ -1981,7 +2016,7 @@ CrGUIElement* CcController::FindObject(const string & Name)
     for ( mw = mWindowList.begin(); mw != mWindowList.end(); mw++ )
     {
       LOGSTAT("Find object, testing: " + (*mw)->mName);
-      if ( theElement = (*mw)->FindObject(Name) ) return theElement;
+      if ( (theElement = (*mw)->FindObject(Name) )) return theElement;
     }
     return nil;
 }
@@ -2458,6 +2493,10 @@ void CcController::StartCrystalsThread()
 //                                                            //
    int arg = 6;
 
+#ifdef CRY_OSMAC
+    setlocale( LC_ALL, "POSIX");
+#endif
+    
 #ifdef CRY_USEMFC
    mCrystalsThread = AfxBeginThread(CrystalsThreadProc,&arg);
 #else
@@ -3194,6 +3233,7 @@ int CcController::GetDescriptor( string &token, int descriptorClass )
                else DESCRIPTOR(PlotPrint)
                else DESCRIPTOR(PlotSave)
                else DESCRIPTOR(Save)
+               else DESCRIPTOR(Load)
                else DESCRIPTOR(ShowH)
              break;
 
@@ -3436,6 +3476,9 @@ extern "C" {
     tstring::size_type sFirst,eFirst,sRest,eRest;
 
     sFirst = line.find_first_not_of(' ');     // Find first non-space.
+
+    std::cerr << "first non-space " << sFirst << std::endl;
+  
     if ( sFirst == string::npos ) sFirst = 0;
 
     if ( line[sFirst] == '+' )                // Check for + symbol (signifies 'wait')
@@ -3444,6 +3487,7 @@ extern "C" {
 // Find next non space ( in case + is seperated from first word ).
        sFirst = line.find_first_not_of(' ',sFirst+1);
        if ( sFirst == string::npos ) sFirst = 0; // should not happen unless no content in string
+        std::cerr << "+ found. new first non-space " << sFirst << std::endl;
     }
     else if ( line[sFirst] == '%' )  // Check for % symbol (signifies 'redirect STDIN and OUT')
     {
@@ -3451,6 +3495,7 @@ extern "C" {
 // Find next non space ( in case + is seperated from first word ).
        sFirst = line.find_first_not_of(' ',sFirst+1);
        if ( sFirst == string::npos ) sFirst = 0;
+        std::cerr << "% found. new first non-space " << sFirst << std::endl;
     }
 // sFirst now points to the beginning of the command.
 
@@ -3459,13 +3504,16 @@ extern "C" {
        sFirst++; //Move to after 1st quote.
        eFirst = line.find_first_of('"',sFirst);   // Find next quote.
        if ( eFirst == string::npos ) eFirst = line.length();
+        std::cerr << "quote found. new first non-space " << sFirst << " end of quote " << eFirst << std::endl;
     }
     else                        // Find next space ( after the first word )
     {
        eFirst = line.find_first_of(' ',sFirst);
        if ( eFirst == string::npos ) eFirst = line.length();
+        std::cerr << "end " << eFirst << std::endl;
     }
 
+      
     tstring firstTok = line.substr(sFirst,eFirst-sFirst);
     tstring restLine;
 
@@ -3475,6 +3523,7 @@ extern "C" {
     sRest = line.find_first_not_of(' ',eFirst+1);
     eRest = line.find_last_not_of(' ');
 
+    std::cerr << "firsttoks " << sFirst << " " << eFirst << " " << sRest << " " << eRest << std::endl;
 
     if ( sRest != string::npos )
     {
@@ -3484,6 +3533,9 @@ extern "C" {
       restLine = line.substr(sRest, eRest);
     }
 
+      
+      std::cerr << restLine << std::endl;
+      
 //        LOGERR(restLine);
 
         tstring totalcl = firstTok;
@@ -3898,7 +3950,18 @@ extern "C" {
 // Check if this might be a filename, and if so find application to
 // open it with.
 
+
+//Special case http urls:
+    tstring lFirstTok = firstTok; 
+    std::transform( lFirstTok.begin(), lFirstTok.end(), lFirstTok.begin(), ::tolower );
+    string::size_type match = lFirstTok.find(("http://"));
+    if ( match == 0 )     {
+         ::wxLaunchDefaultBrowser(firstTok);
+    }
+    else {
+
     wxString fullname(firstTok.c_str());
+        std::cerr << "Full firstTok - " << fullname << std::endl;
     wxString path, name, extension, command;
     ::wxSplitPath(firstTok.c_str(),&path,&name,&extension);
     wxFileType * filetype = wxTheMimeTypesManager->GetFileTypeFromExtension(extension);
@@ -3916,6 +3979,7 @@ extern "C" {
     else if ( bRedir )
     {
       (CcController::theController)->AddInterfaceCommand( "     {0,2 Starting {2,0 " + firstTok + " {0,2 interactively. ");
+        std::cerr << restLine;
     }
     else
     {
@@ -4073,10 +4137,19 @@ extern "C" {
       CcController::theController->AddInterfaceCommand( "^^CR");
       CcController::theController->m_AllowThreadKill = true;
     }
+    else if ( bWait ) {
+        
+        std::cerr << "\n\nGUEXEC: Waiting.\n";
+        long exr = wxExecute(args, wxEXEC_SYNC, NULL);
+        std::cerr << "\n\nGUEXEC: Done. Exit code:" << exr << "\n";
+        
+    }
     else
     {
-
-      pid_t pid = fork();
+        std::cerr << "\n\nGUEXEC: Launching " << args << "\n";
+        long exr = wxExecute(args, wxEXEC_ASYNC, NULL);
+        
+/*      pid_t pid = fork();
 
       if ( pid == 0 ) {          //We're in the child process.
        std::cerr << "\nGUEXEC: Child. Execing...\n";
@@ -4098,12 +4171,12 @@ extern "C" {
           (CcController::theController)->AddInterfaceCommand( "                                                               {0,2 ... Done");
 
       }
-      std::cerr << "\n\nGUEXEC: Done.\n";
-
+*/
     }
 
     delete [] str;
     delete [] cmd;
+    }
 	    return;
 #endif
   }
@@ -4153,7 +4226,253 @@ extern "C" {
 } // end of C functions
 
 
+void CcController::Execute( deque<string> & execStrings ){
 
+    bool pWait = false;
+    bool pRedir = false;
+    
+    if ( execStrings.empty() ) return;
+    
+    if ( execStrings[0] == "+") {
+        pWait = true;
+        execStrings.pop_front();
+        ExecWait(execStrings[0]);
+        execStrings.pop_front();
+    }
+    
+    else if ( execStrings[0] == "%") {
+        pRedir = true;
+        execStrings.pop_front();
+        if ( execStrings.empty() ) return;
+        ExecRedir(execStrings[0]);
+        execStrings.pop_front();
+    }
+    else {
+        Exec(execStrings[0]);
+        execStrings.pop_front();
+    }
+
+    return;
+    
+}
+          
+void CcController::ExecWait( string & execstr) {
+    std::cerr << "\n\nGUEXEC: Waiting.\n";
+    replace(execstr,"CRYSDIR:",getenv("CRYSDIR"));
+    long exr = wxExecute(execstr, wxEXEC_SYNC, NULL);
+    std::cerr << "\n\nGUEXEC: Done. Exit code:" << exr << "\n";
+}
+
+          
+void CcController::Exec( string & execstr) {
+    std::cerr << "\n\nGUEXEC: Waiting.\n";
+    replace(execstr,"CRYSDIR:",getenv("CRYSDIR"));
+    long exr = wxExecute(execstr, wxEXEC_ASYNC, NULL);
+    std::cerr << "\n\nGUEXEC: Done. Exit code:" << exr << "\n";
+    
+}
+
+         
+void CcController::ExecRedir( string & line) {
+    
+    bool bRest = false;
+    
+    std::cerr << "Going to redirect this command: " << line << "\n";
+    
+    replace(line,"CRYSDIR:",getenv("CRYSDIR"));
+
+    std::cerr << "Subbed to this: " << line << "\n";
+
+    
+    tstring::size_type sFirst,eFirst,sRest,eRest;
+    
+    sFirst = line.find_first_not_of(' ');     // Find first non-space.
+    if ( sFirst == string::npos ) sFirst = 0;
+    if ( line[0] == '"' ) {
+        sFirst++; //Move to after 1st quote.
+        eFirst = line.find_first_of('"',sFirst);   // Find next quote.
+        if ( eFirst == string::npos ) eFirst = line.length();
+    }
+    else                        // Find next space ( after the first word )
+    {
+        eFirst = line.find_first_of(' ',sFirst);
+        if ( eFirst == string::npos ) eFirst = line.length();
+    }
+    
+    tstring firstTok = line.substr(sFirst,eFirst-sFirst);
+    tstring restLine;
+    
+    //        LOGERR(firstTok);
+    
+    // Find next non space and last non space
+    sRest = line.find_first_not_of(' ',eFirst+1);
+    eRest = line.find_last_not_of(' ');
+    
+    
+    if ( sRest != string::npos )
+    {
+        bRest = true;
+        eRest = eRest - sRest + 1;
+        eRest = CRMAX ( 1, eRest );  // ensure positive length
+        restLine = line.substr(sRest, eRest);
+    }
+
+    extern int errno;
+    char * cmd = new char[257];
+    char * str = new char[257];
+    memcpy(cmd,firstTok.c_str(),256);
+    memcpy(str,restLine.c_str(),256);
+    *(str+256) = '\0';
+    *(cmd+256) = '\0';
+    char* args[10];       // This allows a maximum of 9 command line arguments
+    char seps[] = " \t";
+    args[0] = cmd;
+    char *token = strtok( str, seps );
+    args[1] = token;
+    for ( int i = 2; (( token != NULL ) && ( i < 10 )); i++ )
+    {
+        token = strtok( NULL, seps );
+        args[i] = token;
+    }
+    
+    
+//    if ( bRedir )
+//    {
+        int ftoChild[2];
+        int ftoParent[2];
+        
+        if ( pipe(ftoChild) < 0 ) {
+            std::cerr << "GUEXEC: Pipe 1 failed: " << "\n";
+            delete [] str;
+            delete [] cmd;
+            return;
+        }
+        if ( pipe(ftoParent) < 0 ) {
+            std::cerr << "GUEXEC: Pipe 2 failed: " << "\n";
+            close(ftoChild[0]);
+            close(ftoChild[1]);
+            delete [] str;
+            delete [] cmd;
+            return;
+        }
+        if ( fcntl(ftoParent[0],F_SETFL,O_NONBLOCK) == -1 ) {
+            std::cerr << "GUEXEC: Pipe 2 switch to Non-blocking failed: " << "\n";
+            close(ftoParent[0]);
+            close(ftoParent[1]);
+            close(ftoChild[0]);
+            close(ftoChild[1]);
+            delete [] str;
+            delete [] cmd;
+            return;
+        }
+        
+        int fd;
+        pid_t pid = fork();
+        
+        if ( pid == 0 ) {          //We're in the child process.
+            close(ftoChild[1]);
+            close(ftoParent[0]);
+            if ( dup2(ftoChild[0],  0) < 0 ) {
+                std::cerr << "\nGUEXEC: Child. Failed to dup2 to stdin...\n";
+            }
+            close(ftoChild[0]);
+            if ( dup2(ftoParent[1], 1) < 0 ) {
+                std::cerr << "\nGUEXEC: Child. Failed to dup2 to stdout...\n";
+            }
+            if ( dup2(ftoParent[1], 2) < 0 ) {
+                std::cerr << "\nGUEXEC: Child. Failed to dup2 to stderr...\n";
+            }
+            close(ftoParent[1]);
+            
+            std::cerr << "\nGUEXEC: Child. Execing...\n";
+            int err = execvp( args[0], args );
+            std::cerr << "GUEXEC: Something went wrong: " << err <<"\n";
+            std::cerr << "GUEXEC: ERRNO: "<< errno << "\n";
+            _exit(-1);
+        }
+        
+        // We're in the parent process
+        close(ftoChild[0]);
+        close(ftoParent[1]);
+        std::cerr << "GUEXEC: Parent.\n";
+        
+        unsigned long exit=0;  //process exit code
+        unsigned long bread;   //bytes read
+        unsigned long avail;   //bytes available
+        
+        // Disable all menus etc.
+        CcController::theController->AddInterfaceCommand( "^^ST STATSET IN");
+        CcController::theController->AddInterfaceCommand( "^^CR");
+        CcController::theController->m_AllowThreadKill = false;
+        
+        char buf[1024];           //i/o buffer
+        BZERO(buf);
+        for(;;)      //main program loop
+        {
+            int bread = -1;
+            while ( 1 )
+            {
+                BZERO(buf);
+                bread = read(ftoParent[0],buf,1023);  //read the stdout pipe
+                if ( bread <= 0 ) break;
+                string s(buf);
+                string::size_type i;
+                while ( ( i = s.find_first_of("\r") ) != string::npos ) {
+                    s.erase(i,1);    //Remove \r
+                }
+                
+                for(;;) {
+                    string::size_type strim = s.find_first_of("\n");
+                    if ( strim == string::npos )
+                    {
+                        CcController::theController->AddInterfaceCommand("{0,1 " + s);
+                        break;
+                    }
+                    CcController::theController->AddInterfaceCommand("{0,1 " + s.substr(0,strim));
+                    s.erase(0,strim+1);
+                }
+                BZERO(buf);
+            }
+            
+            
+            int status;
+            if ( waitpid(pid, &status, WNOHANG) != 0 ) {
+                std::cerr << "GUEXEC: Detected child process exited\n" ;
+                (CcController::theController)->AddInterfaceCommand( "     {0,2 Process has exited. ");
+                break;
+            }
+            
+            
+            bool wait = false;
+            
+            (CcController::theController)->GetCrystalsCommand(*&buf,wait);
+            if ( wait ) {
+                string s(buf);
+                s.erase(s.find_last_not_of(" ")+1,s.length());
+                if ( s.substr(0,11) == "_MAIN CLOSE" )
+                {
+                    UINT uexit=0;
+                    kill(pid,9);
+                    CcController::theController->AddInterfaceCommand("{0,2 Process terminated.");
+                    break;
+                }
+                CcController::theController->AddInterfaceCommand("{0,1 " + s);
+                write(ftoChild[1],s.c_str(),s.length()); //send it to stdin
+                write(ftoChild[1],"\n",1); //send an extra newline char
+            }
+            
+        }
+    
+        // Reenable all menus
+        CcController::theController->AddInterfaceCommand( "^^ST STATUNSET IN");
+        CcController::theController->AddInterfaceCommand( "^^CR");
+        CcController::theController->m_AllowThreadKill = true;
+
+//    }
+}
+          
+          
+          
 // Functions that are called from the CRYSTALS thread:
 bool CcController::GetCrystalsCommand( char * line, bool & bGuexec )
 //-----------------------------------------------------
